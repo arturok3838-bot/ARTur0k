@@ -315,9 +315,26 @@ function cors(res, req) {
 }
 export default async (req, context) => {
   if (req.method === "OPTIONS") {
-    return cors(new Response(null, { status: 204, headers: { "access-control-allow-methods": "GET, POST, PUT, PATCH, DELETE", "access-control-allow-headers": "content-type, authorization, x-client, x-pass", "access-control-max-age": "86400" } }), req);
+    return cors(new Response(null, { status: 204, headers: { "access-control-allow-methods": "GET, POST, PUT, PATCH, DELETE", "access-control-allow-headers": "content-type, authorization, x-client, x-pass, x-account", "access-control-max-age": "86400" } }), req);
   }
-  return cors(await handle(req, context), req);
+  // Pages on GitHub send everything as a plain POST (no browser pre-check needed); unpack it here
+  let r = req;
+  if (req.method === "POST" && /^text\/plain/i.test(req.headers.get("content-type") || "")) {
+    try {
+      const t = await req.text();
+      if (t.length > 7_000_000) return cors(fail(413, "too_large"), req);
+      const e = JSON.parse(t), mm = String(e?._m || "").toUpperCase();
+      if (!["GET", "POST", "PUT", "PATCH", "DELETE"].includes(mm)) return cors(fail(400, "invalid_argument"), req);
+      const h = new Headers();
+      for (const [k, v] of Object.entries(isObj(e._h) ? e._h : {})) if (/^(x-client|x-pass|x-account|authorization|content-type)$/i.test(k)) h.set(k, String(v));
+      for (const k of ["x-nf-client-connection-ip", "x-forwarded-for"]) if (req.headers.get(k)) h.set(k, req.headers.get(k));
+      let body;
+      if (e._b64 != null) body = Buffer.from(String(e._b64), "base64");
+      else if (e._b !== undefined) { body = JSON.stringify(e._b); if (!h.has("content-type")) h.set("content-type", "application/json"); }
+      r = new Request(req.url, { method: mm, headers: h, body: mm === "GET" ? undefined : body });
+    } catch (x) { return cors(fail(400, "invalid_argument"), req); }
+  }
+  return cors(await handle(r, context), req);
 };
 async function handle(req, context) {
   const ctx = context || {};
