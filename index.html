@@ -1137,12 +1137,12 @@ body.editing .ph-add:hover{border-color:var(--acc1);color:var(--fg)}
 /* ---------- own hosting on Netlify (deploy from GitHub) ----------
    On claude.ai the page uses the built-in database. On Netlify set mode:"netlify":
    the page then talks to netlify/functions/api.mjs (texts, prices, photos, requests, admin login). */
-window.SITE_BACKEND={mode:"netlify"};
+window.SITE_BACKEND={mode:"netlify",api:"https://arturok-studio.netlify.app/api"};
 (function(){
   "use strict";
   const B=window.SITE_BACKEND||{};
   if(B.mode!=="netlify"||(window.claude&&window.claude.use))return;
-  const API="/api",TK="art-nl-token",CK="art-nl-client",PK="art-nl-pass",NK="art-nl-none";
+  const API=(location.hostname.endsWith("netlify.app")||!B.api)?"/api":B.api,TK="art-nl-token",CK="art-nl-client",PK="art-nl-pass",NK="art-nl-none";
   const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
   let cid=ls.get(CK),newVisitor=false;
   if(!/^[a-f0-9]{32}$/.test(cid||"")){cid=Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,"0")).join("");ls.set(CK,cid);newVisitor=true}

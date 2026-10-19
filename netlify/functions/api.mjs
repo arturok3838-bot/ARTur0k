@@ -280,7 +280,23 @@ async function startAttack(st, est, why) {
   return next;
 }
 
+// The pages can also be served from GitHub Pages; those addresses may call this server from the browser.
+// Extra addresses: environment variable SITE_ORIGINS, comma-separated.
+const ORIGINS = () => ["https://arturok3838-bot.github.io", ...String(env("SITE_ORIGINS") || "").split(",").map((x) => x.trim()).filter(Boolean)];
+function cors(res, req) {
+  const o = req.headers.get("origin"), list = ORIGINS();
+  res.headers.set("access-control-allow-origin", o && list.includes(o) ? o : list[0]);
+  res.headers.set("access-control-expose-headers", "x-pass, retry-after");
+  res.headers.append("vary", "Origin");
+  return res;
+}
 export default async (req, context) => {
+  if (req.method === "OPTIONS") {
+    return cors(new Response(null, { status: 204, headers: { "access-control-allow-methods": "GET, POST, PUT, PATCH, DELETE", "access-control-allow-headers": "content-type, authorization, x-client, x-pass", "access-control-max-age": "86400" } }), req);
+  }
+  return cors(await handle(req, context), req);
+};
+async function handle(req, context) {
   const ctx = context || {};
   const url = new URL(req.url), m = req.method;
   const [a, b, c3] = url.pathname.replace(/^\/api\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
@@ -495,4 +511,4 @@ export default async (req, context) => {
     console.error(e);
     return fail(500, "server_error");
   }
-};
+}
