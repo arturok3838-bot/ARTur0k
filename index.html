@@ -292,10 +292,24 @@ body:not(.is-admin) #admin{display:none}
 .skel{height:70px;border-radius:14px;background:linear-gradient(90deg,var(--surface),var(--surface2),var(--surface));background-size:200% 100%;animation:sk 1.2s infinite}
 @keyframes sk{to{background-position:-200% 0}}
 .note-muted{font-size:13px;color:var(--muted)}
-#lock{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 70%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#lock,#acctModal{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 70%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .lockbox{width:min(400px,100%);background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:30px;box-shadow:var(--shadow);display:grid;gap:14px;animation:rise .4s cubic-bezier(.2,.7,.2,1)}
 .lockbox .ico{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(140deg,var(--acc1),var(--acc2));color:#fff}
 .lockbox h2{font-size:20px}
+#amFields{display:grid;gap:10px}
+.iconbtn.userbtn{width:auto;min-width:40px;padding:0 11px;gap:7px;display:inline-flex;align-items:center;font:700 13px var(--f-body);color:var(--fg)}
+.userbtn b{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.userbtn b:empty{display:none}
+@media(max-width:560px){.userbtn b{display:none}}
+.admlist{display:grid;gap:8px;margin:14px 0}
+.admrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.admrow b{flex:1;min-width:120px}
+.admform{display:grid;grid-template-columns:1fr 1fr auto;gap:10px}
+.wkwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.wk{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
+.wk th,.wk td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+.wk th{font:600 12px var(--f-body);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.wk tr:last-child td{border-bottom:0}.wk td.n{font-variant-numeric:tabular-nums;font-weight:700}
+@media(max-width:700px){.admform{grid-template-columns:1fr}}
 .lockbox .pw{position:relative}
 .lockbox .pw .inp{padding-right:48px}
 .lockbox .eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:transparent;cursor:pointer;padding:8px;color:var(--muted)}
@@ -775,6 +789,7 @@ body.editing .ph-add:hover{border-color:var(--acc1);color:var(--fg)}
       <a href="#prices">Цены</a><a href="#process">Как работаем</a><a href="#works" id="navWorks" hidden>Работы</a><a href="#estimate">Смета</a><a href="#contacts">Контакты</a>
     </nav>
     <div class="navact">
+      <button class="iconbtn userbtn" id="userBtn" type="button" hidden aria-label="Вход для клиентов"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><b id="userTxt"></b></button>
       <button class="iconbtn" id="mineBtn" type="button" aria-label="Мои заявки" hidden>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5h16v11H8l-4 4z"/></svg>
         <span class="dot" id="mineDot" hidden>0</span>
@@ -784,7 +799,7 @@ body.editing .ph-add:hover{border-color:var(--acc1);color:var(--fg)}
           <span class="ava" aria-hidden="true">АМ</span><b class="acct-t">Кабинет</b><span class="dot" id="acctDot" hidden>0</span>
         </button>
         <div class="acctpop" id="acctPop" role="menu" aria-label="Кабинет администратора" hidden>
-          <div class="ac-head"><span class="ava big" aria-hidden="true">АМ</span><div><b>Артур Малов</b><span>администратор сайта</span></div></div>
+          <div class="ac-head"><span class="ava big" id="acAva" aria-hidden="true">АМ</span><div><b id="acName">Артур Малов</b><span id="acRole">администратор сайта</span></div></div>
           <div class="ac-stats"><div><b id="acNew">0</b><span>новых заявок</span></div><div><b id="acWork">0</b><span>в работе</span></div><div><b id="acUnseen">0</b><span>не про&shy;смотрено</span></div></div>
           <button type="button" role="menuitem" data-ac="orders"><i aria-hidden="true">📋</i>Заявки клиентов</button>
           <button type="button" role="menuitem" data-ac="edit"><i aria-hidden="true">✏️</i>Редактировать сайт</button>
@@ -1037,6 +1052,23 @@ body.editing .ph-add:hover{border-color:var(--acc1);color:var(--fg)}
       <button type="button" data-tab="works" aria-pressed="false">Наши работы</button>
       <button type="button" data-tab="prices" aria-pressed="false">Тарифы и сроки</button>
       <button type="button" data-tab="pass" aria-pressed="false">Пароль</button>
+      <button type="button" data-tab="admins" aria-pressed="false" id="tabAdminsBtn" hidden>Админы</button>
+    </div>
+    <div id="tabAdmins" hidden>
+      <div class="panel">
+        <p class="note-muted" style="margin-top:0">Здесь вы создаёте аккаунты для других админов. Они видят и обрабатывают заявки и могут редактировать сайт. Добавлять и удалять админов и включать защиту может только главный админ (логин <b>admin</b>).</p>
+        <h3 style="font-size:16px;margin:6px 0 10px">Работа админов</h3>
+        <div class="seg" id="wkPeriod" role="group" style="margin-bottom:10px"><button type="button" data-wk="7" aria-pressed="true">7 дней</button><button type="button" data-wk="30" aria-pressed="false">30 дней</button><button type="button" data-wk="0" aria-pressed="false">Всё время</button></div>
+        <div class="wkwrap"><table class="wk" id="wkTable"></table></div>
+        <h3 style="font-size:16px;margin:22px 0 4px">Аккаунты админов</h3>
+        <div id="admList" class="admlist"></div>
+        <form id="admForm" class="admform" novalidate>
+          <input class="inp" id="admLogin" placeholder="Логин нового админа" autocapitalize="none" spellcheck="false" autocomplete="off">
+          <input class="inp" id="admPw" type="password" placeholder="Пароль (от 8 символов)" autocomplete="new-password">
+          <button class="btn primary" type="submit">Добавить админа</button>
+        </form>
+        <div class="note-muted" id="admState" role="status" style="margin-top:10px"></div>
+      </div>
     </div>
     <div id="tabPass" hidden>
       <form class="panel" id="pwForm" novalidate>
@@ -1127,9 +1159,26 @@ body.editing .ph-add:hover{border-color:var(--acc1);color:var(--fg)}
     <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
     <h2 id="lockTitle">Вход в админку</h2>
     <span class="note-muted" id="lockHint">Введите пароль, чтобы открыть заявки и настройки.</span>
+    <input class="inp" id="lockLogin" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="Логин (главный админ — admin)" hidden>
     <div class="pw" id="lockPwRow"><input class="inp" type="password" id="lockPw" autocomplete="current-password" placeholder="Пароль"><button class="eye" type="button" id="lockEye" aria-label="Показать пароль">👁</button></div>
     <div class="err" id="lockErr" role="alert"></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" type="submit" id="lockGo" style="flex:1;justify-content:center">Войти</button><button class="btn ghost" type="button" id="lockCancel">Отмена</button></div>
+  </form>
+</div>
+
+<div id="acctModal" hidden role="dialog" aria-modal="true" aria-labelledby="amTitle">
+  <form class="lockbox" id="amForm" novalidate>
+    <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></div>
+    <h2 id="amTitle"></h2>
+    <div class="seg" id="amTabs" role="group"><button type="button" data-am="in"></button><button type="button" data-am="reg"></button></div>
+    <span class="note-muted" id="amNote"></span>
+    <div id="amFields">
+      <input class="inp" id="amLogin" autocomplete="username" autocapitalize="none" spellcheck="false">
+      <input class="inp" type="password" id="amPw" autocomplete="current-password">
+      <input class="inp" type="password" id="amPw2" autocomplete="new-password">
+    </div>
+    <div class="err" id="amErr" role="alert"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" type="submit" id="amGo" style="flex:1;justify-content:center"></button><button class="btn ghost" type="button" id="amOut" hidden></button><button class="btn ghost" type="button" id="amClose"></button></div>
   </form>
 </div>
 
@@ -1142,14 +1191,16 @@ window.SITE_BACKEND={mode:"netlify",api:"https://arturok-studio.netlify.app/api"
   "use strict";
   const B=window.SITE_BACKEND||{};
   if(B.mode!=="netlify"||(window.claude&&window.claude.use))return;
-  const API=(location.hostname.endsWith("netlify.app")||!B.api)?"/api":B.api,TK="art-nl-token",CK="art-nl-client",PK="art-nl-pass",NK="art-nl-none";
+  const API=(B.api&&location.hostname.endsWith("github.io"))?B.api:"/api",TK="art-nl-token",CK="art-nl-client",PK="art-nl-pass",NK="art-nl-none";
   const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+  const AK="art-nl-acct",AL="art-nl-login";
+  const newCid=()=>Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,"0")).join("");
   let cid=ls.get(CK),newVisitor=false;
-  if(!/^[a-f0-9]{32}$/.test(cid||"")){cid=Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,"0")).join("");ls.set(CK,cid);newVisitor=true}
-  let token=ls.get(TK)||"",admin=false,pass=ls.get(PK)||"";
+  if(!/^[a-f0-9]{32}$/.test(cid||"")){cid=newCid();ls.set(CK,cid);newVisitor=true}
+  let token=ls.get(TK)||"",admin=false,pass=ls.get(PK)||"",acct=ls.get(AK)||"";
   const emit=(n,d)=>{try{window.dispatchEvent(new CustomEvent(n,{detail:d}))}catch(e){}};
   async function call(method,path,body,ctype,cache){
-    const h={"X-Client":cid};if(token)h.Authorization="Bearer "+token;if(pass)h["X-Pass"]=pass;let b;
+    const h={"X-Client":cid};if(token)h.Authorization="Bearer "+token;if(pass)h["X-Pass"]=pass;if(acct)h["X-Account"]=acct;let b;
     if(ctype){b=body;h["Content-Type"]=ctype}else if(body!==undefined){b=JSON.stringify(body);h["Content-Type"]="application/json"}
     let r;try{r=await fetch(API+path,{method,headers:h,body:b,cache:cache||"no-store"})}catch(e){throw Object.assign(new Error("network"),{code:"network"})}
     const np=r.headers.get("x-pass");if(np&&np!==pass){pass=np;ls.set(PK,np);ls.del(NK)}
@@ -1177,7 +1228,7 @@ window.SITE_BACKEND={mode:"netlify",api:"https://arturok-studio.netlify.app/api"
   function boot(){
     if(!ready)ready=(async()=>{
       const s=await getState();S.content=s.content;S.config=s.config;
-      if(token){try{await call("GET","/me");admin=true}catch(e){admin=false}}
+      if(token){try{const me=await call("GET","/me");admin=true;window.SITE_BK.adminUser=me.user||"admin";window.SITE_BK.owner=me.owner!==false}catch(e){admin=false}}
       return true})();
     return ready}
   const timeout=(p,ms)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),ms))]);
@@ -1242,13 +1293,24 @@ window.SITE_BACKEND={mode:"netlify",api:"https://arturok-studio.netlify.app/api"
     upload:async blob=>{const b=await shrink(blob);const j=await call("POST","/img",b,b.type);return{id:j.id,url:API+"/img/"+j.id,sizeBytes:b.size,contentType:b.type}},
     delete:async id=>{await call("DELETE","/img/"+encodeURIComponent(id));return{deleted:true}},
     list:async()=>({assets:[],usage:{}})};
+  function useAcct(j){acct=j.token;ls.set(AK,j.token);ls.set(AL,j.login);ls.set(CK,j.cid);if(j.pass)ls.set(PK,j.pass);ls.del(NK);location.reload()}
   window.claude={use:async name=>{
     try{await timeout(boot(),15000)}catch(e){console.warn("Site API is unreachable:",e);return null}
     if(name==="db")return dbApi();if(name==="user")return userApi;if(name==="assets")return admin?assetsApi:null;return null}};
   window.SITE_BK={
     guard:null,
     url:id=>API+"/img/"+encodeURIComponent(id),
-    async login(pw){const j=await call("POST","/login",{password:pw});token=j.token;ls.set(TK,token);admin=true;return true},
+    async login(pw,login){const j=await call("POST","/login",{password:pw,login:login||""});token=j.token;ls.set(TK,token);admin=true;window.SITE_BK.adminUser=j.user||"admin";window.SITE_BK.owner=j.owner!==false;return true},
+    adminUser:null,owner:true,
+    // client accounts: after sign-in the page switches to the account's cabinet
+    account:ls.get(AL)||null,
+    async register(l,p){useAcct(await call("POST","/account/register",{login:l,password:p}))},
+    async clientLogin(l,p){useAcct(await call("POST","/account/login",{login:l,password:p}))},
+    clientLogout(){[AK,AL,PK,NK].forEach(k=>ls.del(k));ls.set(CK,newCid());location.reload()},
+    listAdmins:()=>call("GET","/admins").then(j=>j.admins||[]),
+    addAdmin:(l,p)=>call("POST","/admins",{login:l,password:p}),
+    setAdminPassword:(l,p)=>call("PATCH","/admins/"+encodeURIComponent(l),{password:p}),
+    deleteAdmin:l=>call("DELETE","/admins/"+encodeURIComponent(l)),
     async logout(){token="";admin=false;ls.del(TK)},
     async changePassword(o,n){const j=await call("POST","/password",{old:o,new:n});if(j.token){token=j.token;ls.set(TK,token)}},
     async setGuard(on){const j=await call("POST","/guard",{on:!!on});window.SITE_BK.guard=j.guard;emit("site-guard",j.guard);return j.guard},
@@ -1310,6 +1372,7 @@ ru:{title:"АРТурок — разработка сайтов",settings:"На�
   st_new:"Новая",st_calc:"Считаем смету",st_sent:"Смета готова",st_work:"В работе",st_done:"Сдан",st_declined:"Отклонена",st_archived:"В архиве",
   declinedNote:"Заявка отклонена. Напишите в Telegram, если хотите обсудить другой вариант.",finalPrice:"Итоговая смета студии",prelim:"Предварительно, от",you:"Вы",
   noMsgs:"Сообщений пока нет. Ответ студии появится здесь автоматически.",msgPh:"Сообщение для студии",send:"Отправить",
+  acctBtn:"Войти",acctTitle:"Вход для клиентов",acctTitleIn:"Ваш аккаунт",tabLogin:"Вход",tabReg:"Регистрация",fLogin:"Логин (латиницей)",fPass:"Пароль (от 8 символов)",fPass2:"Повторите пароль",acctNote:"Аккаунт нужен, чтобы видеть свои заявки и переписку со студией с любого устройства. Заказать смету можно и без него.",acctNoteIn:"Ваши заявки и переписка доступны на любом устройстве после входа.",loggedAs:"Вы вошли как {u}",doLogin:"Войти",doReg:"Создать аккаунт",myOrders:"Мои заявки",logoutC:"Выйти",amClose:"Закрыть",errLogin:"Логин: от 3 до 32 символов — латинские буквы, цифры, точка, дефис или подчёркивание",errShort:"Пароль должен быть не короче 8 символов",errPass2:"Пароли не совпадают",errWrong:"Неверный логин или пароль",errTaken:"Этот логин уже занят, придумайте другой",errGeneric:"Не получилось. Проверьте интернет и попробуйте ещё раз",offerAcct:"Хотите видеть заявку с любого устройства? Создайте аккаунт — это 10 секунд.",
   msgFail:"Сообщение не отправлено. Проверьте связь и попробуйте снова",queued:"В очереди…",slowDown:"Слишком часто. Подождите минуту и попробуйте снова",
   busyWait:"Сейчас на сайт приходит слишком много запросов, поэтому включилась защита от атак. Ваша заявка или сообщение в очереди и отправится автоматически через {s} с. Не закрывайте страницу.",
   busyFail:"Сайт сейчас под сильной нагрузкой, и заявка не ушла. Отправьте её в Telegram — текст уже готов:",statusToast:"Статус заявки: <b>{s}</b>",newMsgToast:"Новое сообщение от студии АРТурок",
@@ -1329,6 +1392,7 @@ en:{title:"АРТурок — website development",settings:"Settings",language:
   st_new:"New",st_calc:"Estimating",st_sent:"Estimate ready",st_work:"In progress",st_done:"Delivered",st_declined:"Declined",st_archived:"Archived",
   declinedNote:"The request was declined. Write to me on Telegram if you'd like to discuss another option.",finalPrice:"Studio's final estimate",prelim:"Preliminary, from",you:"You",
   noMsgs:"No messages yet. The studio's reply will appear here automatically.",msgPh:"Message to the studio",send:"Send",
+  acctBtn:"Sign in",acctTitle:"Client sign-in",acctTitleIn:"Your account",tabLogin:"Sign in",tabReg:"Sign up",fLogin:"Username (Latin letters)",fPass:"Password (8+ characters)",fPass2:"Repeat password",acctNote:"An account lets you see your requests and messages with the studio from any device. You can request an estimate without one.",acctNoteIn:"Your requests and messages are available on any device after signing in.",loggedAs:"Signed in as {u}",doLogin:"Sign in",doReg:"Create account",myOrders:"My requests",logoutC:"Sign out",amClose:"Close",errLogin:"Username: 3–32 characters — Latin letters, digits, dot, hyphen or underscore",errShort:"Password must be at least 8 characters",errPass2:"Passwords don't match",errWrong:"Wrong username or password",errTaken:"This username is taken, try another",errGeneric:"Something went wrong. Check your connection and try again",offerAcct:"Want to see your request from any device? Create an account — it takes 10 seconds.",
   msgFail:"Message not sent. Check your connection and try again",queued:"In queue…",slowDown:"Too often. Please wait a minute and try again",
   busyWait:"The site is getting too many requests right now, so attack protection is on. Your request or message is queued and will be sent automatically in {s} s. Please keep this page open.",
   busyFail:"The site is under heavy load and the request didn't go through. Send it via Telegram — the text is ready:",statusToast:"Request status: <b>{s}</b>",newMsgToast:"New message from АРТурок studio",
@@ -1348,6 +1412,7 @@ zh:{title:"АРТурок — 网站开发",settings:"设置",language:"语言",
   st_new:"新申请",st_calc:"报价中",st_sent:"报价已出",st_work:"开发中",st_done:"已交付",st_declined:"已拒绝",st_archived:"已归档",
   declinedNote:"申请已被拒绝。如需讨论其他方案，请通过 Telegram 联系我。",finalPrice:"工作室最终报价",prelim:"初步估价，起",you:"您",
   noMsgs:"暂无消息。工作室的回复会自动显示在这里。",msgPh:"给工作室留言",send:"发送",
+  acctBtn:"登录",acctTitle:"客户登录",acctTitleIn:"您的账户",tabLogin:"登录",tabReg:"注册",fLogin:"用户名（拉丁字母）",fPass:"密码（至少 8 位）",fPass2:"再次输入密码",acctNote:"有了账户，您可以在任何设备上查看自己的申请和与工作室的对话。没有账户也可以申请报价。",acctNoteIn:"登录后，您可以在任何设备上查看申请和对话。",loggedAs:"已登录：{u}",doLogin:"登录",doReg:"创建账户",myOrders:"我的申请",logoutC:"退出",amClose:"关闭",errLogin:"用户名：3–32 个字符，可用拉丁字母、数字、点、连字符或下划线",errShort:"密码至少 8 位",errPass2:"两次输入的密码不一致",errWrong:"用户名或密码错误",errTaken:"该用户名已被占用，请换一个",errGeneric:"操作失败，请检查网络后重试",offerAcct:"想在任何设备上查看申请？创建一个账户，只需 10 秒。",
   msgFail:"消息未发送，请检查网络后重试",queued:"排队中…",slowDown:"操作过于频繁，请稍等一分钟后再试",
   busyWait:"网站当前请求过多，已启用防攻击保护。您的申请或消息正在排队，将在 {s} 秒后自动发送，请不要关闭页面。",
   busyFail:"网站当前负载过高，申请未能发送。请通过 Telegram 发送——文本已准备好：",statusToast:"申请状态：<b>{s}</b>",newMsgToast:"АРТурок 工作室发来新消息",
@@ -1817,7 +1882,7 @@ function renderGuard(g){const el=$("#guard");if(!el||!g||!g.cfg)return;el.hidden
   $("#guardTxt").textContent=g.on
     ?`Режим атаки до ${hm(g.until)}${g.manual?" (включён вручную)":g.why==="new"?" (много новых заявок подряд)":""}. Новых посетителей пускаем ${g.cfg.admit} за ${W} с, клиенты с заявками и вы работаете как обычно. Адресов за ${W} с: ${g.over?"больше "+g.cap:"≈"+g.est}, отклонено запросов: ${g.denied}${cs?". Страны: "+cs:""}`
     :`Защита от атак: обычный режим. Адресов за ${W} с: ≈${g.est}, порог ${g.cfg.visitors}${g.quiet?`. Автовключение на паузе до ${hm(g.quiet)}`:""}`;
-  $("#guardBtn").textContent=g.on?"Выключить":"Включить вручную";
+  $("#guardBtn").textContent=g.on?"Выключить":"Включить вручную";$("#guardBtn").hidden=!!(window.SITE_BK&&window.SITE_BK.owner===false);
   const pb=$("#guardPurge");pb.hidden=!(g.queued>0);pb.textContent=`Удалить заявки из очереди (${g.queued||0})`}
 window.addEventListener("site-guard",e=>renderGuard(e.detail));
 $("#guardPurge").addEventListener("click",async()=>{const g=window.SITE_BK&&window.SITE_BK.guard;if(!g||!window.SITE_BK.purgeQueued)return;
@@ -1826,6 +1891,69 @@ $("#guardPurge").addEventListener("click",async()=>{const g=window.SITE_BK&&wind
 $("#guardBtn").addEventListener("click",async()=>{if(!window.SITE_BK||!window.SITE_BK.setGuard)return;const g=window.SITE_BK.guard,on=!(g&&g.on);
   if(!on&&!confirm("Выключить режим защиты? Автоматическое включение будет на паузе 15 минут."))return;
   try{await window.SITE_BK.setGuard(on);toast(on?"Режим защиты включён на час":"Режим защиты выключен")}catch(ex){toast("Не получилось. Проверьте связь и повторите")}});
+
+/* ---------- client accounts (own hosting) ---------- */
+let amMode="in";
+function renderAcctUI(){
+  const bk=window.SITE_BK,ub=$("#userBtn");
+  ub.hidden=!(bk&&bk.register);if(ub.hidden)return;
+  const acc=bk.account;$("#userTxt").textContent=acc||T("acctBtn");ub.setAttribute("aria-label",acc?T("loggedAs",{u:acc}):T("acctTitle"));
+  if($("#acctModal").hidden)return;
+  const inn=!!acc;$("#amTitle").textContent=inn?T("acctTitleIn"):T("acctTitle");
+  $("#amTabs").hidden=inn;$("#amFields").hidden=inn;$("#amOut").hidden=!inn;
+  $$("#amTabs [data-am]").forEach(b=>{b.textContent=T(b.dataset.am==="in"?"tabLogin":"tabReg");b.setAttribute("aria-pressed",b.dataset.am===amMode)});
+  $("#amNote").innerHTML=inn?T("loggedAs",{u:"<b>"+esc(acc)+"</b>"})+"<br>"+T("acctNoteIn"):T("acctNote");
+  $("#amLogin").placeholder=T("fLogin");$("#amPw").placeholder=T("fPass");$("#amPw2").placeholder=T("fPass2");$("#amPw2").hidden=amMode!=="reg";
+  $("#amPw").autocomplete=amMode==="reg"?"new-password":"current-password";
+  $("#amGo").textContent=inn?T("myOrders"):amMode==="reg"?T("doReg"):T("doLogin");$("#amClose").textContent=T("amClose");$("#amOut").textContent=T("logoutC");
+}
+function openAcct(mode){amMode=mode||"in";$("#acctModal").hidden=false;$("#amErr").textContent="";$("#amGo").disabled=false;renderAcctUI();setTimeout(()=>($("#amFields").hidden?$("#amGo"):$("#amLogin")).focus(),50)}
+const closeAcct=()=>{$("#acctModal").hidden=true};
+$("#userBtn").addEventListener("click",()=>openAcct("in"));
+$("#amClose").addEventListener("click",closeAcct);
+$("#acctModal").addEventListener("keydown",e=>{if(e.key==="Escape")closeAcct()});
+$("#acctModal").addEventListener("click",e=>{if(e.target.id==="acctModal")closeAcct()});
+$$("#amTabs [data-am]").forEach(b=>b.addEventListener("click",()=>{amMode=b.dataset.am;$("#amErr").textContent="";renderAcctUI()}));
+$("#amOut").addEventListener("click",()=>window.SITE_BK.clientLogout());
+$("#amForm").addEventListener("submit",async e=>{e.preventDefault();const bk=window.SITE_BK,err=$("#amErr");
+  if(bk.account){closeAcct();const m=$("#mine");if(!m.hidden)m.scrollIntoView({behavior:"smooth"});return}
+  const l=$("#amLogin").value.trim().toLowerCase(),p=$("#amPw").value;
+  if(!/^[a-z0-9][a-z0-9_.-]{2,31}$/.test(l)){err.textContent=T("errLogin");return}
+  if(p.length<8){err.textContent=T("errShort");return}
+  if(amMode==="reg"&&p!==$("#amPw2").value){err.textContent=T("errPass2");return}
+  const go=$("#amGo");go.disabled=true;err.textContent="…";
+  try{amMode==="reg"?await bk.register(l,p):await bk.clientLogin(l,p)}
+  catch(ex){const c=String(ex&&ex.code||"");err.textContent=c.includes("taken")?T("errTaken"):c.includes("wrong")?T("errWrong"):c.includes("too-many")&&/\d/.test(ex.message||"")?ex.message:c.includes("bad-login")?T("errLogin"):T("errGeneric");go.disabled=false}});
+renderAcctUI();
+
+/* ---------- admin accounts (own hosting, main admin only) ---------- */
+function syncAdminUI(){const bk=window.SITE_BK;if(!bk)return;const own=bk.owner!==false,u=bk.adminUser||"admin";
+  $("#tabAdminsBtn").hidden=!own||!bk.listAdmins;
+  $("#acName").textContent=own?"Артур Малов":u;$("#acRole").textContent=own?"главный администратор":"администратор";$("#acAva").textContent=own?"АМ":u.slice(0,2).toUpperCase();
+  const ab=document.querySelector(".acctbtn .ava");if(ab)ab.textContent=own?"АМ":u.slice(0,2).toUpperCase()}
+let wkDays=7;
+function renderWork(){const tb=$("#wkTable");if(!tb)return;const from=wkDays?Date.now()-wkDays*864e5:0,S={};
+  const row=u=>S[u]||(S[u]={u,replies:0,st:0,price:0,reqs:new Set(),last:0});
+  orders.forEach(r=>{msgsOf(r).forEach(m=>{if(m.from!=="studio"||(m.at||0)<from)return;const x=row(m.by||"admin");x.replies++;x.reqs.add(r.id);x.last=Math.max(x.last,m.at||0)});
+    (r.hist||[]).forEach(h=>{if((h.t||0)<from)return;const x=row(h.by||"admin");if(h.a==="st")x.st++;if(h.a==="price")x.price++;x.reqs.add(r.id);x.last=Math.max(x.last,h.t||0)})});
+  const list=Object.values(S).sort((a,b)=>b.replies-a.replies);
+  tb.innerHTML=`<tr><th>Админ</th><th>Ответов клиентам</th><th>Сменил статусов</th><th>Выставил смет</th><th>Заявок в работе</th><th>Последнее действие</th></tr>`+
+    (list.length?list.map(x=>`<tr><td><b>${esc(x.u)}</b></td><td class="n">${x.replies}</td><td class="n">${x.st}</td><td class="n">${x.price}</td><td class="n">${x.reqs.size}</td><td>${x.last?fmtDate(x.last):"—"}</td></tr>`).join(""):`<tr><td colspan="6" class="note-muted">За этот период админы ещё ничего не делали</td></tr>`)}
+$$("#wkPeriod [data-wk]").forEach(b=>b.addEventListener("click",()=>{wkDays=+b.dataset.wk;$$("#wkPeriod [data-wk]").forEach(x=>x.setAttribute("aria-pressed",x===b));renderWork()}));
+async function renderAdmins(){renderWork();const box=$("#admList");box.innerHTML='<div class="note-muted">Загружаю…</div>';
+  try{const list=await window.SITE_BK.listAdmins();
+    box.innerHTML=`<div class="admrow"><b>admin</b><span class="note-muted">главный админ — это вы</span></div>`+list.map(a=>`<div class="admrow"><b>${esc(a.login)}</b><span class="note-muted">добавлен ${fmtDate(a.createdAt)}</span><button class="btn ghost small" type="button" data-adm-pw="${esc(a.login)}">Новый пароль</button><button class="btn ghost small" type="button" data-adm-del="${esc(a.login)}" style="color:var(--bad)">Удалить</button></div>`).join("")}
+  catch(e){box.innerHTML='<div class="note-muted">Не удалось загрузить список. Обновите страницу.</div>'}}
+$("#admList").addEventListener("click",async e=>{const p=e.target.closest("[data-adm-pw]"),d=e.target.closest("[data-adm-del]");
+  if(p){const v=prompt(`Новый пароль для «${p.dataset.admPw}» (от 8 символов):`);if(v==null)return;if(v.length<8){toast("Пароль короче 8 символов");return}
+    try{await window.SITE_BK.setAdminPassword(p.dataset.admPw,v);toast("Пароль изменён, старый больше не работает")}catch(ex){toast(esc(ex.message||"Не получилось"))}}
+  if(d){if(!confirm(`Удалить админа «${d.dataset.admDel}»? Он сразу потеряет доступ к админке.`))return;
+    try{await window.SITE_BK.deleteAdmin(d.dataset.admDel);toast("Админ удалён");renderAdmins()}catch(ex){toast(esc(ex.message||"Не получилось"))}}});
+$("#admForm").addEventListener("submit",async e=>{e.preventDefault();const l=$("#admLogin").value.trim().toLowerCase(),p=$("#admPw").value,st=$("#admState");
+  if(!/^[a-z0-9][a-z0-9_.-]{2,31}$/.test(l)){st.textContent="Логин: от 3 до 32 символов — латинские буквы, цифры, точка, дефис или подчёркивание";return}
+  if(l==="admin"){st.textContent="Логин admin занят главным админом";return}
+  if(p.length<8){st.textContent="Пароль должен быть не короче 8 символов";return}
+  st.textContent="Сохраняю…";try{await window.SITE_BK.addAdmin(l,p);$("#admForm").reset();st.textContent=`Готово: «${l}» может входить в админку со своим логином и паролем`;renderAdmins()}catch(ex){st.textContent=ex.message||"Не получилось"}});
 
 /* ---------- capabilities ---------- */
 let db=null,uid=null,canEdit=false,dbWritable=true;
@@ -1863,6 +1991,7 @@ $("#estForm").addEventListener("submit",async e=>{
     const payload={clientName:name,contact,lastAt:Date.now(),requests:{[id]:req}};
     if(snap.exists) await ref.update(payload); else await ref.set(payload);
     $("#sendState").innerHTML=`<div class="state ok">${T("sentOk")}</div>`;store.set("art-last-order",String(Date.now()));
+    if(window.SITE_BK&&window.SITE_BK.register&&!window.SITE_BK.account){$("#sendState").insertAdjacentHTML("beforeend",`<div class="state info">${T("offerAcct")} <button class="btn ghost small" type="button" id="offerReg">${T("doReg")}</button></div>`);$("#offerReg").addEventListener("click",()=>openAcct("reg"))}
     $("#fComment").value="";$("#rNo").textContent="№ "+id.slice(-6).toUpperCase();
     setTimeout(()=>$("#mine").scrollIntoView({behavior:"smooth",block:"start"}),900);
   }catch(ex){
@@ -1921,7 +2050,7 @@ function notifyClient(prev,doc){
 /* ---------- admin ---------- */
 let orders=[],selected=null,filter="active",knownIds=null,adminOpen=false;
 function flatten(snap){
-  const out=[];snap.docs.forEach(d=>{const v=d.data()||{};Object.values(v.requests||{}).forEach(r=>{if(r&&r.id)out.push({...r,uid:d.id})})});
+  const out=[];snap.docs.forEach(d=>{const v=d.data()||{};Object.values(v.requests||{}).forEach(r=>{if(r&&r.id)out.push({...r,uid:d.id,acc:v.account||""})})});
   return out.sort((a,b)=>(b.updatedAt||b.createdAt)-(a.updatedAt||a.createdAt));
 }
 const FILTERS=[{k:"active",t:"Активные",f:r=>!["done","declined","archived"].includes(r.status)},{k:"new",t:"Новые",f:r=>r.status==="new"},{k:"work",t:"В работе",f:r=>r.status==="work"},{k:"done",t:"Сданы",f:r=>r.status==="done"},{k:"all",t:"Все",f:r=>r.status!=="archived"},{k:"archived",t:"Архив",f:r=>r.status==="archived"}];
@@ -1951,6 +2080,7 @@ function renderDetail(){
     <div class="top" style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center"><div><h3 style="font-size:18px">${esc(r.name)}</h3><div class="note-muted">№ ${esc(r.id.slice(-6).toUpperCase())} · ${fmtDate(r.createdAt)}</div></div><span class="pill st-${esc(r.status)}">${stName(r.status)}</span></div>
     <div class="dgrid">
       <div><span>Контакт</span><b>${esc(r.contact)}</b></div>
+      ${r.acc?`<div><span>Аккаунт клиента</span><b>${esc(r.acc)}</b></div>`:""}
       <div><span>Тип сайта</span><b>${esc(r.typeName)}, ${esc(r.pages)} стр.</b></div>
       <div><span>Опции</span><b>${esc((r.optNames||[]).join(", ")||"—")}</b></div>
       <div><span>Сроки</span><b>${r.urg==="fast"?"Срочно":"Обычные"}</b></div>
@@ -1960,7 +2090,7 @@ function renderDetail(){
     <div><div class="lbl" style="margin-bottom:8px">Статус · клиент видит сразу</div><div class="stbtns">${STATUSES.map(s=>`<button type="button" class="st-${s.k}" data-st="${s.k}" aria-pressed="${r.status===s.k}">${s.t}</button>`).join("")}</div></div>
     <div><div class="lbl" style="margin-bottom:8px">Итоговая смета</div><div class="reply"><input class="inp" id="adPrice" inputmode="numeric" placeholder="Предварительно ${rub(r.total)}" value="${esc(keepPrice!=null?keepPrice:(r.finalPrice||""))}"><button class="btn ghost small" type="button" id="adPriceSave">Сохранить</button></div></div>
     <div><div class="lbl" style="margin-bottom:8px">Переписка</div>
-      <div class="thread" id="adThread">${msgsOf(r).map(m=>`<div class="msg ${m.from==="studio"?"client":"studio"}">${esc(m.text)}<small>${m.from==="studio"?"Вы (студия)":esc(r.name)} · ${fmtDate(m.at)}${m.from==="studio"&&m.read?" · прочитано":""}</small></div>`).join("")||`<div class="note-muted">Напишите клиенту — сообщение появится у него на сайте мгновенно.</div>`}</div>
+      <div class="thread" id="adThread">${msgsOf(r).map(m=>`<div class="msg ${m.from==="studio"?"client":"studio"}">${esc(m.text)}<small>${m.from==="studio"?(m.by?"Ответил "+esc(m.by):"Вы (студия)"):esc(r.name)} · ${fmtDate(m.at)}${m.from==="studio"&&m.read?" · прочитано":""}</small></div>`).join("")||`<div class="note-muted">Напишите клиенту — сообщение появится у него на сайте мгновенно.</div>`}</div>
       <form class="reply" id="adForm" style="margin-top:10px"><input class="inp" id="adReply" placeholder="Ответ клиенту" maxlength="1000" value="${esc(keepReply)}"><button class="btn primary small" type="submit">Отправить</button></form></div>
     ${window.SITE_BK&&window.SITE_BK.deleteRequest?`<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">${r.q?'<span class="note-muted">Заявка пришла во время атаки через очередь.</span>':"<span></span>"}<button class="btn ghost small" type="button" id="adDel" style="color:var(--bad)">Удалить заявку</button></div>`:""}`;
   const th=$("#adThread");th.scrollTop=th.scrollHeight;
@@ -2027,9 +2157,9 @@ $("#savePrices").addEventListener("click",async()=>{
   try{await db.doc("site/config").set(data);$("#pState").textContent="Сохранено. Тарифы на сайте обновлены у всех посетителей."}catch(e){$("#pState").textContent="Не сохранилось. Проверьте связь и повторите."}
 });
 $("#resetPrices").addEventListener("click",async()=>{$("#pState").textContent="Возвращаю…";try{await db.doc("site/config").set({updatedAt:Date.now()});$("#pState").textContent="Стандартные тарифы возвращены."}catch(e){$("#pState").textContent="Не получилось. Повторите."}});
-const TABS={orders:"#tabOrders",texts:"#tabTexts",works:"#tabWorks",prices:"#tabPrices",pass:"#tabPass"};
+const TABS={orders:"#tabOrders",texts:"#tabTexts",works:"#tabWorks",prices:"#tabPrices",pass:"#tabPass",admins:"#tabAdmins"};
 $$(".tabs button").forEach(b=>b.addEventListener("click",()=>{$$(".tabs button").forEach(x=>x.setAttribute("aria-pressed",x===b));for(const t in TABS)$(TABS[t]).hidden=b.dataset.tab!==t;
-  if(b.dataset.tab==="prices")renderPriceEditor();if(b.dataset.tab==="works"){renderWorksAdmin();ensureAssets()}if(b.dataset.tab==="texts")txStats()}));
+  if(b.dataset.tab==="prices")renderPriceEditor();if(b.dataset.tab==="works"){renderWorksAdmin();ensureAssets()}if(b.dataset.tab==="texts")txStats();if(b.dataset.tab==="admins")renderAdmins()}));
 function setAdmin(on){if(on&&!unlocked){showLock();return}adminOpen=on;document.body.classList.toggle("is-admin",on);scrollTo(0,0);if(on)renderAdmin()}
 $("#adminBtn").addEventListener("click",()=>setAdmin(true));
 
@@ -2041,8 +2171,8 @@ async function sha(s){const b=await crypto.subtle.digest("SHA-256",new TextEncod
 let adminAvail="pending";
 function showLock(){
   const off=adminAvail==="none"||adminAvail==="viewer"||adminAvail==="offline";
-  $("#lockHint").textContent=adminAvail==="none"?"Админка работает в онлайн-версии сайта на claude.ai: там хранятся заявки, тексты и фото. В этой копии сайта её нет, для неё нужен сервер.":adminAvail==="viewer"?"Вход в админку доступен только владельцу сайта.":adminAvail==="offline"?"Не удалось подключиться к серверу сайта. Проверьте интернет и обновите страницу чуть позже.":adminAvail==="bk"?"Введите пароль администратора.":"Введите пароль, чтобы открыть заявки и настройки.";
-  $("#lockPwRow").hidden=off;$("#lockGo").hidden=off;$("#lockCancel").textContent=off?"Закрыть":"Отмена";
+  $("#lockHint").textContent=adminAvail==="none"?"Админка работает в онлайн-версии сайта на claude.ai: там хранятся заявки, тексты и фото. В этой копии сайта её нет, для неё нужен сервер.":adminAvail==="viewer"?"Вход в админку доступен только владельцу сайта.":adminAvail==="offline"?"Не удалось подключиться к серверу сайта. Проверьте интернет и обновите страницу чуть позже.":adminAvail==="bk"?"Введите логин и пароль. Главный админ входит с логином admin.":"Введите пароль, чтобы открыть заявки и настройки.";
+  $("#lockPwRow").hidden=off;$("#lockGo").hidden=off;$("#lockLogin").hidden=adminAvail!=="bk";$("#lockCancel").textContent=off?"Закрыть":"Отмена";
   $("#lock").hidden=false;$("#lockErr").textContent="";$("#lockPw").value="";setTimeout(()=>(off?$("#lockCancel"):$("#lockPw")).focus(),50)}
 function hideLock(){$("#lock").hidden=true}
 function unlock(){unlocked=true;ss.set("art-adm",authHash);hideLock();startOrders();setAdmin(true)}
@@ -2052,9 +2182,9 @@ $("#lockEye").addEventListener("click",()=>{const i=$("#lockPw");i.type=i.type==
 $("#lockForm").addEventListener("submit",async e=>{e.preventDefault();if(adminAvail==="none"||adminAvail==="viewer"||adminAvail==="offline")return;const err=$("#lockErr");
   if(adminAvail==="bk"){const pw=$("#lockPw").value;if(!pw){err.textContent="Введите пароль";return}
     const go=$("#lockGo");go.disabled=true;err.textContent="Вхожу…";
-    try{await window.SITE_BK.login(pw);canEdit=true;adminAvail="owner";unlocked=true;err.textContent="";hideLock();startOrders();setAdmin(true);toast("Вы вошли в админку")}
+    try{await window.SITE_BK.login(pw,$("#lockLogin").value.trim());canEdit=true;adminAvail="owner";unlocked=true;err.textContent="";hideLock();startOrders();setAdmin(true);toast("Вы вошли в админку")}
     catch(ex){const c=String(ex&&ex.code||"");$("#lockPw").value="";const box=$(".lockbox");box.classList.remove("shake");void box.offsetWidth;box.classList.add("shake");
-      err.textContent=c.includes("too-many")?(ex&&/мин/.test(ex.message||"")?ex.message:"Слишком много попыток. Подождите 10 минут и попробуйте снова"):c.includes("network")?"Нет связи с сервером. Проверьте интернет":c.includes("not-configured")?"Пароль админки ещё не задан: добавьте переменную ADMIN_PASSWORD в настройках Netlify и перезапустите деплой":c.includes("wrong-password")?"Неверный пароль":"Не получилось войти. Попробуйте ещё раз"}
+      err.textContent=c.includes("too-many")?(ex&&/мин/.test(ex.message||"")?ex.message:"Слишком много попыток. Подождите 10 минут и попробуйте снова"):c.includes("network")?"Нет связи с сервером. Проверьте интернет":c.includes("not-configured")?"Пароль админки ещё не задан: добавьте переменную ADMIN_PASSWORD в настройках Netlify и перезапустите деплой":c.includes("wrong-password")?($("#lockLogin").value.trim()?"Неверный логин или пароль":"Неверный пароль"):"Не получилось войти. Попробуйте ещё раз"}
     finally{go.disabled=false}return}
   if(!authLoaded){err.textContent="Подключаюсь к базе, попробуйте через пару секунд";return}
   const left=Math.ceil((lockUntil-Date.now())/1000);if(left>0){err.textContent=`Слишком много попыток. Подождите ${left} с`;return}
@@ -2073,7 +2203,7 @@ $("#pwForm").addEventListener("submit",async e=>{e.preventDefault();const st=$("
   st.textContent="Сохраняю…";const h=await sha(n);
   try{await db.doc("adm/auth").set({hash:h,changedAt:Date.now()});authHash=h;ss.set("art-adm",h);$("#pwForm").reset();st.textContent="Пароль изменён. Используйте новый при следующем входе."}catch(ex){st.textContent="Не сохранилось. Проверьте связь и повторите."}});
 function startOrders(){
-  syncAcct();
+  syncAcct();syncAdminUI();
   if(ordersUnsub||!db)return;
   ordersUnsub=db.collection("orders").onSnapshot(s=>{
       const next=flatten(s);const ids=new Set(next.map(r=>r.id));let fresh=new Set();
@@ -2083,7 +2213,7 @@ function startOrders(){
         if(who.length>3)toast(`Новых сообщений от клиентов: <b>${who.length}</b>`);else who.forEach(r=>toast(`Сообщение от клиента <b>${esc(r.name||"Без имени")}</b>`))}
       knownIds=ids;orders=next;
       $("#live").classList.remove("off");$("#liveTxt").textContent="онлайн · "+new Date().toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
-      renderAdmin(fresh);
+      renderAdmin(fresh);if(!$("#tabAdmins").hidden)renderWork();
     },e=>{$("#live").classList.add("off");$("#liveTxt").textContent="нет связи, обновите страницу"});
 }
 $("#backBtn").addEventListener("click",()=>setAdmin(false));
@@ -2131,7 +2261,7 @@ const refsOf=c=>{const s=new Set(Object.values(c.imgs));for(const k in c.photos)
 
 /* keys for every editable text and image */
 const EDIT_SEL="h1,h2,h3,p,li,.eyebrow,.facts b,.facts span,.when,.step .n,.chip,a.btn,button.btn,.val,.note-muted,label,.lbl,.note,.total span,#urg button";
-const EDIT_SKIP=".hp,#plans,#types,#opts,#mineList,#rLines,#sendState,#mq,#worksGrid,svg,.ph-block,#pagesHint,#rNo,#rTotal,#fErr,#pagesOut";
+const EDIT_SKIP="#acctModal,#userBtn,.hp,#plans,#types,#opts,#mineList,#rLines,#sendState,#mq,#worksGrid,svg,.ph-block,#pagesHint,#rNo,#rTotal,#fErr,#pagesOut";
 function keyAll(){
   const cnt={},scopeOf=el=>{const s=el.closest("section[id]");return s?s.id:el.closest("header")?"nav":el.closest("footer")?"foot":"hero"};
   const cands=[...$$("header.nav .brand b,header.nav .brand span,header.nav .links a"),...$("#site").querySelectorAll(EDIT_SEL),...$$("footer span")];
@@ -2374,7 +2504,7 @@ function applyLang(L){
   $("#edLang").textContent="Язык правки: "+LANGS[L].name;
   $("#ilCur").textContent=(CUR[L]||CUR.ru).sym+" ✓";
   applyAttrs();$("#setBtn").setAttribute("aria-label",T("setAria"));
-  applyContent(editing&&draft?draft:CONTENT);renderMarquee();renderPlans();renderEstForm();renderMine();
+  applyContent(editing&&draft?draft:CONTENT);renderMarquee();renderPlans();renderEstForm();renderMine();renderAcctUI();
 }
 const setBtn=$("#setBtn"),setPop=$("#setPop");
 function setOpen(o){setPop.hidden=!o;setBtn.setAttribute("aria-expanded",String(o))}

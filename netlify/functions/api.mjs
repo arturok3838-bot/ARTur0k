@@ -105,27 +105,50 @@ function checkPassword(a, pw) {
   if (!e) return null;
   return same(sha(pw), sha(e));
 }
-function sign(a) {
-  const p = Buffer.from(JSON.stringify({ exp: Date.now() + 30 * 864e5, v: a.ver || 1 })).toString("base64url");
-  return p + "." + mac(a.secret, p);
+/* ---------- accounts ----------
+   Admins: the main admin (login "admin", password from ADMIN_PASSWORD or changed in the admin panel) and extra
+   admins the main admin creates (stored as admins/<login>). Clients: optional accounts users/<login>, each tied
+   to the client's request cabinet, so requests and messages are visible from any device after logging in. */
+const LOGIN_RE = /^[a-z0-9][a-z0-9_.-]{2,31}$/;
+const OWNER = "admin";
+const normLogin = (x) => String(x || "").trim().toLowerCase();
+const passwordOk = (rec, pw) => !!rec && !!rec.salt && same(pbk(pw, rec.salt), rec.hash);
+function sign(a, u, v, kind) {
+  const p = Buffer.from(JSON.stringify({ exp: Date.now() + (kind ? 90 : 30) * 864e5, v: v || 1, u: u || OWNER, ...(kind ? { k: kind } : {}) })).toString("base64url");
+  return p + "." + mac(a.secret, (kind ? kind + ":" : "") + p);
 }
-function verify(a, tok) {
+function readTok(a, tok, kind) {
   const [p, s] = String(tok || "").split(".");
-  if (!p || !s || !a.secret) return false;
-  if (!same(s, mac(a.secret, p))) return false;
-  try { const d = JSON.parse(Buffer.from(p, "base64url").toString()); return d.exp > Date.now() && d.v === (a.ver || 1); } catch (e) { return false; }
+  if (!p || !s || !a.secret || p.length > 600) return null;
+  if (!same(s, mac(a.secret, (kind ? kind + ":" : "") + p))) return null;
+  try { const d = JSON.parse(Buffer.from(p, "base64url").toString()); return d.exp > Date.now() && (d.k || null) === (kind || null) ? d : null; } catch (e) { return null; }
 }
-async function isAdmin(st, req) {
+const admC = new Map();
+async function adminRec(st, u, fresh) {
+  const c = admC.get(u);
+  if (!fresh && c && Date.now() - c.t < 30000) return c.rec;
+  const rec = await st.get("admins/" + u, { type: "json" });
+  admC.set(u, { rec, t: Date.now() });
+  return rec;
+}
+// who is calling: { u, owner } for a valid admin token, otherwise null
+async function adminOf(st, req) {
   const tok = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
-  if (!tok) return false;
-  if (verify(await getAuth(st), tok)) return true;
-  return Date.now() - authT > 2000 ? verify(await getAuth(st, true), tok) : false;
+  if (!tok) return null;
+  for (const fresh of [false, true]) {
+    if (fresh && Date.now() - authT < 2000) return null;
+    const a = await getAuth(st, fresh), d = readTok(a, tok);
+    if (d && (!d.u || d.u === OWNER) && d.v === (a.ver || 1)) return { u: OWNER, owner: true };
+    if (d && d.u && d.u !== OWNER) { const r = await adminRec(st, d.u, fresh); if (r && d.v === (r.ver || 1)) return { u: d.u, owner: false }; }
+  }
+  return null;
 }
+const isAdmin = async (st, req) => !!(await adminOf(st, req));
 // A client who has a request gets a pass. In attack mode it opens the cabinet only if it was issued at least
 // GUARD_TRUST seconds before the attack began, so bots that sign up at the start of an attack get nothing from it.
 // A visitor let in through the queue gets a short pass (GUARD_PASS seconds).
-function passFor(a, cid, adm) {
-  const t = Date.now(), d = adm ? { c: cid, iat: t, exp: t + guardCfg().pass * 1000, adm: 1 } : { c: cid, iat: t, exp: t + 180 * 864e5 };
+function passFor(a, cid, adm, since) {
+  const t = Date.now(), d = adm ? { c: cid, iat: t, exp: t + guardCfg().pass * 1000, adm: 1 } : { c: cid, iat: Math.min(t, since || t), exp: t + 180 * 864e5 };
   const p = Buffer.from(JSON.stringify(d)).toString("base64url");
   return p + "." + mac(a.secret, "pass:" + p);
 }
@@ -332,16 +355,14 @@ async function handle(req, context) {
       const type = IMG_TYPES.includes(r.metadata?.type) ? r.metadata.type : "application/octet-stream";
       return new Response(r.data, { headers: { "content-type": type, "cache-control": "public, max-age=31536000, immutable", "netlify-cdn-cache-control": "public, durable, max-age=31536000, immutable", "x-content-type-options": "nosniff", "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox" } });
     }
-    if (a === "login" && m === "POST") {
-      const t = Date.now(), h = hourOf(t), abroad = cc !== "RU" && cc !== "??";
-      const k0 = `g/t/${h}/lock/${ipH}`, k1 = `g/t/${h - 1}/lock/${ipH}`;
+    // wrong passwords (admins and clients alike): 8 from one address → 10-minute pause for it
+    const abroad = cc !== "RU" && cc !== "??";
+    async function lockCheck() {
+      const t = Date.now(), h = hourOf(t), k0 = `g/t/${h}/lock/${ipH}`, k1 = `g/t/${h - 1}/lock/${ipH}`;
       const [l0, l1, ga] = await Promise.all([st.get(k0, { type: "json" }), st.get(k1, { type: "json" }), abroad ? st.get("g/lockall", { type: "json" }) : null]);
       const until = Math.max(l0?.until || 0, l1?.until || 0, abroad ? ga?.until || 0 : 0);
-      if (until > t) { const s = Math.ceil((until - t) / 1000); return fail(429, "too-many-requests", `Слишком много попыток. Повторите через ${Math.ceil(s / 60)} мин`, { "retry-after": String(s) }); }
-      const body = await readJson(req, 4000), fa = await getAuth(st, true);
-      const ok = checkPassword(fa, String(body?.password || ""));
-      if (ok === null) return fail(503, "not-configured", "ADMIN_PASSWORD не задан");
-      if (!ok) {
+      const blocked = until > t ? fail(429, "too-many-requests", `Слишком много попыток. Повторите через ${Math.ceil((until - t) / 60e3)} мин`, { "retry-after": String(Math.ceil((until - t) / 1000)) }) : null;
+      return { blocked, async failed(msg) {
         const f = (l0?.f || 0) + 1;
         await st.setJSON(k0, f >= LIM.loginFailsPerIp ? { f: 0, until: t + 10 * 60e3 } : { f, until: 0 });
         if (abroad) await casJSON(st, "g/lockall", (d) => {
@@ -351,11 +372,71 @@ async function handle(req, context) {
           return x;
         }, 3);
         await sleep(400);
-        return fail(401, "wrong-password", "Неверный пароль");
+        return fail(401, "wrong-password", msg || "Неверный логин или пароль");
+      }, ok() { if (l0) bg(st.delete(k0)); if (l1) bg(st.delete(k1)); } };
+    }
+    if (a === "login" && m === "POST") {
+      const lk = await lockCheck();
+      if (lk.blocked) return lk.blocked;
+      const body = await readJson(req, 4000), fa = await getAuth(st, true), login = normLogin(body?.login) || OWNER, pw = String(body?.password || "");
+      if (login === OWNER) {
+        const ok = checkPassword(fa, pw);
+        if (ok === null) return fail(503, "not-configured", "ADMIN_PASSWORD не задан");
+        if (!ok) return lk.failed(body?.login ? "Неверный логин или пароль" : "Неверный пароль");
+        lk.ok();
+        return json({ token: sign(fa, OWNER, fa.ver || 1), user: OWNER, owner: true });
       }
-      if (l0) bg(st.delete(k0));
-      if (l1) bg(st.delete(k1));
-      return json({ token: sign(fa) });
+      const rec = LOGIN_RE.test(login) ? await adminRec(st, login, true) : null;
+      if (!passwordOk(rec, pw)) return lk.failed();
+      lk.ok();
+      return json({ token: sign(fa, login, rec.ver || 1), user: login, owner: false });
+    }
+    // ----- client accounts (optional): the account keeps the client's cabinet across devices -----
+    if (a === "account") {
+      const cid = req.headers.get("x-client") || "", acct = readTok(au, req.headers.get("x-account"), "acct");
+      if (!b && m === "GET") return acct ? json({ login: acct.u, cid: acct.c }) : fail(401, "no-account");
+      if (b === "register" && m === "POST") {
+        if (!CID.test(cid)) return fail(400, "invalid_argument");
+        const mode = await getMode(st);
+        if (attackOn(mode) && !trusted(passInfo(au, req.headers.get("x-pass"), cid), mode) && !(await admitOne(st))) return busy();
+        const body = await readJson(req, 4000), login = normLogin(body?.login), pw = String(body?.password || "");
+        if (!LOGIN_RE.test(login) || login === OWNER) return fail(400, "bad-login", "Логин: 3–32 символа, латинские буквы, цифры, точка, дефис или подчёркивание");
+        if (pw.length < 8 || pw.length > 200) return fail(400, "weak-password", "Пароль не короче 8 символов");
+        const rk = `g/t/${hourOf(Date.now())}/reg/${ipH}`, rc = (await st.get(rk, { type: "json" })) || { n: 0 };
+        if (rc.n >= 5) return slow();
+        if (await st.get("admins/" + login, { type: "json" })) return fail(409, "login-taken", "Этот логин уже занят");
+        // the account takes over this browser's cabinet, unless another account already owns it
+        let own = cid;
+        if (await st.get("cidowner/" + own, { type: "json" })) own = crypto.randomBytes(16).toString("hex");
+        const t = Date.now(), salt = crypto.randomBytes(16).toString("hex");
+        const r = await st.setJSON("users/" + login, { login, salt, hash: pbk(pw, salt), cid: own, ver: 1, createdAt: t }, { onlyIfNew: true });
+        if (!r || !r.modified) return fail(409, "login-taken", "Этот логин уже занят");
+        await st.setJSON(rk, { n: rc.n + 1 });
+        await st.setJSON("cidowner/" + own, { login });
+        const doc = await st.getWithMetadata("orders/" + own, { type: "json" });
+        if (doc?.data) await st.setJSON("orders/" + own, { ...doc.data, account: login }, isObj(doc.metadata) ? { metadata: doc.metadata } : {});
+        return json({ login, cid: own, token: sign(au, login, 1, "acct"), pass: passFor(au, own) });
+      }
+      if (b === "login" && m === "POST") {
+        const lk = await lockCheck();
+        if (lk.blocked) return lk.blocked;
+        const body = await readJson(req, 4000), login = normLogin(body?.login);
+        const rec = LOGIN_RE.test(login) ? await st.get("users/" + login, { type: "json" }) : null;
+        if (!passwordOk(rec, String(body?.password || ""))) return lk.failed();
+        lk.ok();
+        return json({ login, cid: rec.cid, token: sign(au, login, rec.ver || 1, "acct"), pass: passFor(au, rec.cid, false, rec.createdAt) });
+      }
+      if (b === "password" && m === "POST") {
+        if (!acct) return fail(401, "no-account");
+        const body = await readJson(req, 4000), rec = await st.get("users/" + acct.u, { type: "json" });
+        if (!passwordOk(rec, String(body?.old || ""))) return fail(403, "wrong-password", "Текущий пароль неверный");
+        const nw = String(body?.new || "");
+        if (nw.length < 8) return fail(400, "weak-password", "Пароль не короче 8 символов");
+        const salt = crypto.randomBytes(16).toString("hex"), next = { ...rec, salt, hash: pbk(nw, salt), ver: (rec.ver || 1) + 1 };
+        await st.setJSON("users/" + acct.u, next);
+        return json({ ok: true, token: sign(au, acct.u, next.ver, "acct") });
+      }
+      return fail(404, "not_found");
     }
     // ----- a client's own requests (identified by a random id kept in their browser) -----
     if (a === "my") {
@@ -410,14 +491,48 @@ async function handle(req, context) {
         }
       }
       for (const k of d.newKeys) Object.assign(next.requests[k], { createdAt: t, updatedAt: t, status: "new", seenByAdmin: false });
+      if (!old) { const ow = await st.get("cidowner/" + cid, { type: "json" }); if (ow?.login) next.account = ow.login; else delete next.account; }
+      else if (old.account) next.account = old.account; else delete next.account;
       await st.setJSON(key, next, { metadata: { w: [...w, t], rq: [...rq, ...Array(Math.min(d.newReqs, 20)).fill(t)], ms: [...ms, ...Array(Math.min(d.newMsgs, 20)).fill(t)] } });
       if (ipoKey) await st.setJSON(ipoKey, { n: ipo.n + 1 });
       const np = newPass || (pi ? null : passFor(au, cid));
       return json({ ok: true }, 200, np ? { "x-pass": np } : {});
     }
     // ----- admin only -----
-    if (!(await isAdmin(st, req))) return fail(401, "permission-denied", "Нужен вход в админку");
-    if (a === "me") return json({ admin: true });
+    const me = await adminOf(st, req);
+    if (!me) return fail(401, "permission-denied", "Нужен вход в админку");
+    if (a === "me") return json({ admin: true, user: me.u, owner: me.owner });
+    if (a === "admins") {
+      if (!me.owner) return fail(403, "owner-only", "Управлять админами может только главный админ");
+      if (!b && m === "GET") {
+        const { blobs } = await st.list({ prefix: "admins/" });
+        const list = (await Promise.all(blobs.map((x) => st.get(x.key, { type: "json" })))).filter(Boolean).map((r) => ({ login: r.login, createdAt: r.createdAt || 0 }));
+        return json({ admins: list.sort((x, y) => x.createdAt - y.createdAt) });
+      }
+      if (!b && m === "POST") {
+        const body = await readJson(req, 4000), login = normLogin(body?.login), pw = String(body?.password || "");
+        if (!LOGIN_RE.test(login) || login === OWNER) return fail(400, "bad-login", "Логин: 3–32 символа, латинские буквы, цифры, точка, дефис или подчёркивание");
+        if (pw.length < 8) return fail(400, "weak-password", "Пароль не короче 8 символов");
+        const salt = crypto.randomBytes(16).toString("hex");
+        const r = await st.setJSON("admins/" + login, { login, salt, hash: pbk(pw, salt), ver: 1, createdAt: Date.now() }, { onlyIfNew: true });
+        if (!r || !r.modified) return fail(409, "login-taken", "Админ с таким логином уже есть");
+        admC.delete(login);
+        return json({ ok: true });
+      }
+      const login = normLogin(b);
+      if (!LOGIN_RE.test(login)) return fail(400, "bad-login");
+      if (m === "PATCH") {
+        const body = await readJson(req, 4000), pw = String(body?.password || ""), rec = await st.get("admins/" + login, { type: "json" });
+        if (!rec) return fail(404, "not_found", "Такого админа нет");
+        if (pw.length < 8) return fail(400, "weak-password", "Пароль не короче 8 символов");
+        const salt = crypto.randomBytes(16).toString("hex");
+        await st.setJSON("admins/" + login, { ...rec, salt, hash: pbk(pw, salt), ver: (rec.ver || 1) + 1 });
+        admC.delete(login);
+        return json({ ok: true });
+      }
+      if (m === "DELETE") { await st.delete("admins/" + login); admC.delete(login); return json({ ok: true }); }
+      return fail(405, "method_not_allowed");
+    }
     if (a === "site" && (b === "content" || b === "config") && m === "PUT") {
       const body = await readJson(req, MAX_JSON);
       if (!isObj(body)) return fail(400, "invalid_argument");
@@ -466,12 +581,24 @@ async function handle(req, context) {
       if (!CID.test(b)) return fail(400, "invalid_argument");
       const key = "orders/" + b, body = await readJson(req, MAX_ORDER);
       if (!isObj(body)) return fail(400, "invalid_argument");
-      const cur = await st.getWithMetadata(key, { type: "json" });
-      await st.setJSON(key, merge(cur?.data || {}, body), isObj(cur?.metadata) ? { metadata: cur.metadata } : {});
+      const cur = await st.getWithMetadata(key, { type: "json" }), next = merge(cur?.data || {}, body), t = Date.now();
+      // who did what: new studio replies get the admin's login, status and estimate changes go to the request history
+      const R0 = isObj(cur?.data?.requests) ? cur.data.requests : {};
+      for (const [k, br] of Object.entries(isObj(body.requests) ? body.requests : {})) {
+        const r = next.requests?.[k], r0 = R0[k] || {};
+        if (!isObj(r) || !isObj(br)) continue;
+        for (const [mk, mm] of Object.entries(isObj(br.messages) ? br.messages : {})) if (isObj(mm) && mm.from === "studio" && !r0.messages?.[mk] && isObj(r.messages?.[mk])) { r.messages[mk].by = me.u; r.messages[mk].at = t; }
+        const acts = [];
+        if (br.status && br.status !== r0.status) acts.push({ a: "st", s: String(br.status).slice(0, 20) });
+        if (br.finalPrice != null && br.finalPrice !== r0.finalPrice) acts.push({ a: "price" });
+        if (acts.length) r.hist = [...(Array.isArray(r0.hist) ? r0.hist : []), ...acts.map((x) => ({ ...x, by: me.u, t }))].slice(-60);
+      }
+      await st.setJSON(key, next, isObj(cur?.metadata) ? { metadata: cur.metadata } : {});
       return json({ ok: true });
     }
     if (a === "guard" && !b && m === "GET") return json({ guard: await guardInfo(st) });
     if (a === "guard" && !b && m === "POST") {
+      if (!me.owner) return fail(403, "owner-only", "Включать и выключать защиту может только главный админ");
       const body = await readJson(req, 1000), t = Date.now();
       const next = body?.on ? { until: t + 3600e3, since: t, manual: true, peak: 0, c: [] } : { until: 0, quiet: t + 15 * 60e3 };
       await st.setJSON("g/mode", next);
@@ -492,6 +619,16 @@ async function handle(req, context) {
       if (IMGID.test(b)) await st.delete("img/" + b);
       return json({ ok: true });
     }
+    if (a === "password" && m === "POST" && !me.owner) {
+      const body = await readJson(req, 4000), rec = await adminRec(st, me.u, true), fa = await getAuth(st);
+      if (!passwordOk(rec, String(body?.old || ""))) return fail(403, "wrong-password", "Текущий пароль неверный");
+      const nw = String(body?.new || "");
+      if (nw.length < 8) return fail(400, "weak-password", "Пароль короче 8 символов");
+      const salt = crypto.randomBytes(16).toString("hex"), next = { ...rec, salt, hash: pbk(nw, salt), ver: (rec.ver || 1) + 1 };
+      await st.setJSON("admins/" + me.u, next);
+      admC.delete(me.u);
+      return json({ ok: true, token: sign(fa, me.u, next.ver) });
+    }
     if (a === "password" && m === "POST") {
       const body = await readJson(req, 4000), fa = await getAuth(st, true);
       if (checkPassword(fa, String(body?.old || "")) !== true) return fail(403, "wrong-password", "Текущий пароль неверный");
@@ -503,7 +640,7 @@ async function handle(req, context) {
       delete next.fails; delete next.lockUntil;
       await st.setJSON("auth", next);
       authC = next; authT = Date.now();
-      return json({ ok: true, token: sign(next) });
+      return json({ ok: true, token: sign(next, OWNER, next.ver) });
     }
     return fail(404, "not_found");
   } catch (e) {
