@@ -1,0 +1,7 @@
+# Сайт АРТурок: страница index.html в корне, серверная часть в netlify/functions/api.mjs
+[build]
+  publish = "."
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
