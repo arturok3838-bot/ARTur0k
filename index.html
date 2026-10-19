@@ -304,6 +304,18 @@ body:not(.is-admin) #admin{display:none}
 .admrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
 .admrow b{flex:1;min-width:120px}
 .admform{display:grid;grid-template-columns:1fr 1fr auto;gap:10px}
+.chatgrid{display:grid;grid-template-columns:290px 1fr;gap:16px;align-items:start}
+@media(max-width:860px){.chatgrid{grid-template-columns:1fr}}
+.chatlist{display:grid;gap:6px;margin-top:12px}
+.chatitem{display:grid;gap:3px;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer;font:inherit;color:inherit;min-width:0}
+.chatitem[aria-current=true]{border-color:var(--acc1);box-shadow:0 0 0 1px var(--acc1) inset}
+.chatitem small{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chatitem em,.tabdot{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--acc1);color:#fff;font:700 11px var(--f-body);font-style:normal;vertical-align:1px}
+.chatmem{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 12px}
+.chatmem label{display:inline-flex;gap:6px;align-items:center;padding:6px 10px;border:1px solid var(--line);border-radius:999px;font-size:13px;cursor:pointer}
+.chathead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.chatmsgs{min-height:260px;max-height:460px;overflow:auto;align-content:start;grid-auto-rows:max-content}
+#chatNew{margin-top:12px}
 .wkwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
 .wk{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
 .wk th,.wk td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
@@ -1048,11 +1060,32 @@ body.editing .ph-add:hover{border-color:var(--acc1);color:var(--fg)}
     </div>
     <div class="tabs seg" role="group" aria-label="Разделы админки">
       <button type="button" data-tab="orders" aria-pressed="true">Заявки</button>
+      <button type="button" data-tab="chat" aria-pressed="false" id="tabChatBtn" hidden>Чат <em class="tabdot" id="chatBadge" hidden>0</em></button>
       <button type="button" data-tab="texts" aria-pressed="false">Тексты и фото</button>
       <button type="button" data-tab="works" aria-pressed="false">Наши работы</button>
       <button type="button" data-tab="prices" aria-pressed="false">Тарифы и сроки</button>
       <button type="button" data-tab="pass" aria-pressed="false">Пароль</button>
       <button type="button" data-tab="admins" aria-pressed="false" id="tabAdminsBtn" hidden>Админы</button>
+    </div>
+    <div id="tabChat" hidden>
+      <div class="chatgrid">
+        <aside class="panel chatside">
+          <button class="btn primary small" id="chatNewBtn" type="button">+ Новый чат</button>
+          <form id="chatNew" hidden novalidate>
+            <input class="inp" id="chatTitle" placeholder="Название, например «Заказ кофейни»" maxlength="80" autocomplete="off">
+            <div class="note-muted" style="margin-top:8px">Участники:</div>
+            <div class="chatmem" id="chatMem"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary small" type="submit">Создать</button><button class="btn ghost small" type="button" id="chatNewCancel">Отмена</button></div>
+            <div class="err" id="chatNewErr"></div>
+          </form>
+          <div id="chatList" class="chatlist"></div>
+        </aside>
+        <section class="panel chatmain">
+          <div id="chatHead" class="chathead"><span class="note-muted">Выберите чат слева или создайте новый</span></div>
+          <div id="chatMsgs" class="thread chatmsgs"></div>
+          <form id="chatForm" class="reply" hidden style="margin-top:10px"><input class="inp" id="chatInput" placeholder="Сообщение" maxlength="2000" autocomplete="off"><button class="btn primary small" type="submit">Отправить</button></form>
+        </section>
+      </div>
     </div>
     <div id="tabAdmins" hidden>
       <div class="panel">
@@ -1311,6 +1344,13 @@ window.SITE_BACKEND={mode:"netlify",api:"https://arturok-studio.netlify.app/api"
     addAdmin:(l,p)=>call("POST","/admins",{login:l,password:p}),
     setAdminPassword:(l,p)=>call("PATCH","/admins/"+encodeURIComponent(l),{password:p}),
     deleteAdmin:l=>call("DELETE","/admins/"+encodeURIComponent(l)),
+    team:()=>call("GET","/team").then(j=>j.team||[]),
+    chats:()=>call("GET","/chats").then(j=>j.chats||[]),
+    chat:id=>call("GET","/chats/"+encodeURIComponent(id)).then(j=>j.chat),
+    newChat:(title,members)=>call("POST","/chats",{title,members}),
+    sendChat:(id,text)=>call("POST","/chats/"+encodeURIComponent(id)+"/msg",{text}),
+    readChat:id=>call("POST","/chats/"+encodeURIComponent(id)+"/read",{}),
+    delChat:id=>call("DELETE","/chats/"+encodeURIComponent(id)),
     async logout(){token="";admin=false;ls.del(TK)},
     async changePassword(o,n){const j=await call("POST","/password",{old:o,new:n});if(j.token){token=j.token;ls.set(TK,token)}},
     async setGuard(on){const j=await call("POST","/guard",{on:!!on});window.SITE_BK.guard=j.guard;emit("site-guard",j.guard);return j.guard},
@@ -1930,7 +1970,39 @@ renderAcctUI();
 function syncAdminUI(){const bk=window.SITE_BK;if(!bk)return;const own=bk.owner!==false,u=bk.adminUser||"admin";
   $("#tabAdminsBtn").hidden=!own||!bk.listAdmins;
   $("#acName").textContent=own?"Артур Малов":u;$("#acRole").textContent=own?"главный администратор":"администратор";$("#acAva").textContent=own?"АМ":u.slice(0,2).toUpperCase();
-  const ab=document.querySelector(".acctbtn .ava");if(ab)ab.textContent=own?"АМ":u.slice(0,2).toUpperCase()}
+  const ab=document.querySelector(".acctbtn .ava");if(ab)ab.textContent=own?"АМ":u.slice(0,2).toUpperCase();startChats()}
+
+/* ---------- chats between admins (own hosting) ---------- */
+let chatId=null,chatList=[],chatTimer=null,chatUnread=-1;
+const CB=()=>window.SITE_BK&&window.SITE_BK.chats?window.SITE_BK:null;
+const meName=()=>(CB()&&CB().adminUser)||"admin";
+function startChats(){const bk=CB();if(!bk)return;$("#tabChatBtn").hidden=false;loadChats();clearInterval(chatTimer);
+  chatTimer=setInterval(()=>{if(document.hidden||!unlocked)return;loadChats();if(!$("#tabChat").hidden&&chatId)loadChat(false)},5000)}
+async function loadChats(){const bk=CB();if(!bk||!unlocked)return;
+  try{chatList=await bk.chats()}catch(e){return}
+  const open=!$("#tabChat").hidden&&adminOpen,n=chatList.reduce((s,c)=>s+(open&&c.id===chatId?0:c.unread),0);
+  if(chatUnread>=0&&n>chatUnread&&!open)toast("Новое сообщение в чате админов");chatUnread=n;
+  $("#chatBadge").hidden=!n;$("#chatBadge").textContent=n;if(!$("#tabChat").hidden)renderChatList()}
+function renderChatList(){const me=meName();
+  $("#chatList").innerHTML=chatList.length?chatList.map(c=>`<button type="button" class="chatitem" data-chat="${esc(c.id)}" aria-current="${c.id===chatId}"><b>${esc(c.title)}${c.unread&&c.id!==chatId?` <em>${c.unread}</em>`:""}</b><small>${c.last?esc(c.last.by===me?"Вы":c.last.by)+": "+esc(c.last.text):"Пока нет сообщений"}</small></button>`).join(""):'<div class="note-muted">Чатов пока нет. Создайте первый.</div>'}
+async function loadChat(scroll){const bk=CB();if(!chatId)return;let c;
+  try{c=await bk.chat(chatId)}catch(e){chatId=null;$("#chatHead").innerHTML='<span class="note-muted">Чат удалён или недоступен</span>';$("#chatMsgs").innerHTML="";$("#chatForm").hidden=true;loadChats();return}
+  const me=meName(),box=$("#chatMsgs"),atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<40;
+  $("#chatHead").innerHTML=`<div><b>${esc(c.title)}</b><div class="note-muted">Участники: ${c.members.map(esc).join(", ")}</div></div>${bk.owner!==false||c.createdBy===me?'<button class="btn ghost small" type="button" id="chatDel" style="color:var(--bad)">Удалить чат</button>':""}`;
+  box.innerHTML=c.messages.length?c.messages.map(m=>`<div class="msg ${m.by===me?"client":"studio"}">${esc(m.text)}<small>${m.by===me?"Вы":esc(m.by)} · ${fmtDate(m.at)}</small></div>`).join(""):'<div class="note-muted">Напишите первое сообщение</div>';
+  $("#chatForm").hidden=false;if(scroll||atBottom)box.scrollTop=box.scrollHeight;
+  $("#chatDel")?.addEventListener("click",async()=>{if(!confirm(`Удалить чат «${c.title}» вместе с перепиской?`))return;
+    try{await bk.delChat(c.id);chatId=null;$("#chatHead").innerHTML='<span class="note-muted">Выберите чат слева или создайте новый</span>';box.innerHTML="";$("#chatForm").hidden=true;toast("Чат удалён");loadChats()}catch(ex){toast(esc(ex.message||"Не получилось"))}});
+  if(c.unread)bk.readChat(c.id).then(loadChats).catch(()=>{})}
+$("#chatList").addEventListener("click",e=>{const it=e.target.closest("[data-chat]");if(!it)return;chatId=it.dataset.chat;renderChatList();loadChat(true)});
+$("#chatNewBtn").addEventListener("click",async()=>{const f=$("#chatNew");f.hidden=false;$("#chatNewErr").textContent="";$("#chatTitle").value="";$("#chatMem").innerHTML='<span class="note-muted">Загружаю…</span>';$("#chatTitle").focus();
+  try{const me=meName(),team=(await CB().team()).filter(u=>u!==me);$("#chatMem").innerHTML=team.length?team.map(u=>`<label><input type="checkbox" value="${esc(u)}" checked>${esc(u)}</label>`).join(""):'<span class="note-muted">Других админов пока нет — добавьте их во вкладке «Админы»</span>'}catch(e){$("#chatMem").innerHTML=""}});
+$("#chatNewCancel").addEventListener("click",()=>{$("#chatNew").hidden=true});
+$("#chatNew").addEventListener("submit",async e=>{e.preventDefault();const t=$("#chatTitle").value.trim();if(!t){$("#chatNewErr").textContent="Напишите название чата";return}
+  const members=$$("#chatMem input:checked").map(i=>i.value);
+  try{const j=await CB().newChat(t,members);$("#chatNew").hidden=true;chatId=j.id;await loadChats();renderChatList();loadChat(true)}catch(ex){$("#chatNewErr").textContent=ex.message||"Не получилось"}});
+$("#chatForm").addEventListener("submit",async e=>{e.preventDefault();const inp=$("#chatInput"),text=inp.value.trim();if(!text||!chatId)return;inp.value="";
+  try{await CB().sendChat(chatId,text);await loadChat(true);loadChats()}catch(ex){if(!inp.value)inp.value=text;toast(esc(ex.message||"Сообщение не отправлено"))}});
 let wkDays=7;
 function renderWork(){const tb=$("#wkTable");if(!tb)return;const from=wkDays?Date.now()-wkDays*864e5:0,S={};
   const row=u=>S[u]||(S[u]={u,replies:0,st:0,price:0,reqs:new Set(),last:0});
@@ -2157,9 +2229,9 @@ $("#savePrices").addEventListener("click",async()=>{
   try{await db.doc("site/config").set(data);$("#pState").textContent="Сохранено. Тарифы на сайте обновлены у всех посетителей."}catch(e){$("#pState").textContent="Не сохранилось. Проверьте связь и повторите."}
 });
 $("#resetPrices").addEventListener("click",async()=>{$("#pState").textContent="Возвращаю…";try{await db.doc("site/config").set({updatedAt:Date.now()});$("#pState").textContent="Стандартные тарифы возвращены."}catch(e){$("#pState").textContent="Не получилось. Повторите."}});
-const TABS={orders:"#tabOrders",texts:"#tabTexts",works:"#tabWorks",prices:"#tabPrices",pass:"#tabPass",admins:"#tabAdmins"};
+const TABS={chat:"#tabChat",orders:"#tabOrders",texts:"#tabTexts",works:"#tabWorks",prices:"#tabPrices",pass:"#tabPass",admins:"#tabAdmins"};
 $$(".tabs button").forEach(b=>b.addEventListener("click",()=>{$$(".tabs button").forEach(x=>x.setAttribute("aria-pressed",x===b));for(const t in TABS)$(TABS[t]).hidden=b.dataset.tab!==t;
-  if(b.dataset.tab==="prices")renderPriceEditor();if(b.dataset.tab==="works"){renderWorksAdmin();ensureAssets()}if(b.dataset.tab==="texts")txStats();if(b.dataset.tab==="admins")renderAdmins()}));
+  if(b.dataset.tab==="prices")renderPriceEditor();if(b.dataset.tab==="works"){renderWorksAdmin();ensureAssets()}if(b.dataset.tab==="texts")txStats();if(b.dataset.tab==="admins")renderAdmins();if(b.dataset.tab==="chat"){renderChatList();loadChats();if(chatId)loadChat(true)}}));
 function setAdmin(on){if(on&&!unlocked){showLock();return}adminOpen=on;document.body.classList.toggle("is-admin",on);scrollTo(0,0);if(on)renderAdmin()}
 $("#adminBtn").addEventListener("click",()=>setAdmin(true));
 

@@ -596,6 +596,52 @@ async function handle(req, context) {
       await st.setJSON(key, next, isObj(cur?.metadata) ? { metadata: cur.metadata } : {});
       return json({ ok: true });
     }
+    // ----- chats between admins -----
+    if (a === "team" && m === "GET") {
+      const { blobs } = await st.list({ prefix: "admins/" });
+      return json({ team: [OWNER, ...blobs.map((x) => x.key.slice(7)).sort()], me: me.u, owner: me.owner });
+    }
+    if (a === "chats") {
+      const sees = (c) => isObj(c) && (me.owner || (Array.isArray(c.members) && c.members.includes(me.u)));
+      const brief = (c) => { const ms = Object.values(isObj(c.messages) ? c.messages : {}).sort((x, y) => x.at - y.at), last = ms[ms.length - 1] || null, rd = c.reads?.[me.u] || 0;
+        return { id: c.id, title: c.title, members: c.members, createdBy: c.createdBy, createdAt: c.createdAt, last, unread: ms.filter((x) => x.at > rd && x.by !== me.u).length }; };
+      if (!b && m === "GET") {
+        const { blobs } = await st.list({ prefix: "chats/" });
+        const list = (await Promise.all(blobs.map((x) => st.get(x.key, { type: "json" })))).filter(sees).map(brief);
+        return json({ chats: list.sort((x, y) => (y.last?.at || y.createdAt) - (x.last?.at || x.createdAt)) });
+      }
+      if (!b && m === "POST") {
+        const body = await readJson(req, 4000), title = String(body?.title || "").trim().slice(0, 80);
+        if (!title) return fail(400, "bad-title", "Напишите название чата");
+        const members = [...new Set([me.u, ...(Array.isArray(body?.members) ? body.members : []).map(normLogin).filter((x) => x === OWNER || LOGIN_RE.test(x))])].slice(0, 50);
+        const id = "c" + Date.now().toString(36) + crypto.randomBytes(4).toString("hex");
+        await st.setJSON("chats/" + id, { id, title, members, createdBy: me.u, createdAt: Date.now(), messages: {}, reads: {} });
+        return json({ ok: true, id });
+      }
+      if (!/^c[a-z0-9]{6,30}$/.test(b || "")) return fail(400, "invalid_argument");
+      const key = "chats/" + b, c = await st.get(key, { type: "json" });
+      if (!sees(c)) return fail(404, "not_found", "Чат не найден");
+      if (!c3 && m === "GET") { const ms = Object.entries(isObj(c.messages) ? c.messages : {}).map(([id, x]) => ({ id, ...x })).sort((x, y) => x.at - y.at).slice(-300); return json({ chat: { ...brief(c), messages: ms } }); }
+      if (!c3 && m === "DELETE") {
+        if (!me.owner && c.createdBy !== me.u) return fail(403, "forbidden", "Удалить чат может его создатель или главный админ");
+        await st.delete(key);
+        return json({ ok: true });
+      }
+      if (c3 === "msg" && m === "POST") {
+        const body = await readJson(req, 6000), text = String(body?.text || "").trim();
+        if (!text || text.length > 2000) return fail(400, "bad-text", "Сообщение пустое или длиннее 2000 символов");
+        if (!hit(mem.cidHits, "chat:" + me.u, 30, 60e3)) return slow();
+        const t = Date.now(), mid = "m" + t.toString(36) + crypto.randomBytes(3).toString("hex");
+        const r = await casJSON(st, key, (d) => { if (!isObj(d)) return undefined; const M = { ...(isObj(d.messages) ? d.messages : {}), [mid]: { by: me.u, text, at: t } }; const ks = Object.keys(M); if (ks.length > 500) ks.sort((x, y) => M[x].at - M[y].at).slice(0, ks.length - 500).forEach((k) => delete M[k]); return { ...d, messages: M, reads: { ...(d.reads || {}), [me.u]: t } }; });
+        if (!r || !r.modified) return fail(503, "busy-retry", "Не получилось отправить, повторите");
+        return json({ ok: true });
+      }
+      if (c3 === "read" && m === "POST") {
+        await casJSON(st, key, (d) => (isObj(d) ? { ...d, reads: { ...(d.reads || {}), [me.u]: Date.now() } } : undefined), 3);
+        return json({ ok: true });
+      }
+      return fail(405, "method_not_allowed");
+    }
     if (a === "guard" && !b && m === "GET") return json({ guard: await guardInfo(st) });
     if (a === "guard" && !b && m === "POST") {
       if (!me.owner) return fail(403, "owner-only", "Включать и выключать защиту может только главный админ");
