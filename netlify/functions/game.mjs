@@ -13,7 +13,8 @@ export const config = {
 
 const MAX_SAVE = 1_500_000;
 const LOGIN_RE = /^[a-z0-9][a-z0-9_.-]{2,23}$/;
-const ORIGINS = ["https://arturok3838-bot.github.io"];
+// сайт игры, приложение Android (WebView) и iPhone (страница из файла приложения — origin "null")
+const ORIGINS = ["https://arturok3838-bot.github.io", "https://appassets.androidplatform.net", "null"];
 const mem = { saveT: new Map() };
 
 const env = (k) => { try { const v = globalThis.Netlify?.env?.get(k); if (v != null && v !== "") return v; } catch (e) {} return process.env[k] || null; };
