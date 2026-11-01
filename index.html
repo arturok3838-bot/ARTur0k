@@ -292,11 +292,34 @@ body:not(.is-admin) #admin{display:none}
 .skel{height:70px;border-radius:14px;background:linear-gradient(90deg,var(--surface),var(--surface2),var(--surface));background-size:200% 100%;animation:sk 1.2s infinite}
 @keyframes sk{to{background-position:-200% 0}}
 .note-muted{font-size:13px;color:var(--muted)}
-#lock,#acctModal{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 70%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#lock,#acctModal,#revModal{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 70%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .lockbox{width:min(400px,100%);background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:30px;box-shadow:var(--shadow);display:grid;gap:14px;animation:rise .4s cubic-bezier(.2,.7,.2,1)}
 .lockbox .ico{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(140deg,var(--acc1),var(--acc2));color:#fff}
 .lockbox h2{font-size:20px}
 #amFields{display:grid;gap:10px}
+.helpgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.hcard{padding:22px;border-radius:20px;background:var(--surface);border:1px solid var(--line);transition:transform .3s,border-color .3s}
+.hcard:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--acc1) 45%,var(--line))}
+.hcard .hi{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;margin-bottom:14px;color:#fff;background:linear-gradient(140deg,var(--acc1),var(--acc2))}
+.hcard .hi svg{width:22px;height:22px}
+.hcard h3{font-size:18px;margin-bottom:6px}.hcard p{color:var(--muted);font-size:15px;line-height:1.5;margin:0}
+.revgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.rcard{padding:22px;border-radius:20px;background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.rcard .rs{color:#F5B301;letter-spacing:2px;font-size:16px}
+.rcard p{margin:0;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.rcard .rm{margin-top:auto;font-size:13px;color:var(--muted)}.rcard .rm b{color:var(--fg)}
+.revempty{grid-column:1/-1;padding:26px;border:1px dashed var(--line);border-radius:20px;text-align:center;color:var(--muted)}
+.revact{margin-top:18px;display:flex;justify-content:center}
+.stars{display:flex;gap:4px}.stars button{border:0;background:none;font-size:30px;line-height:1;cursor:pointer;color:color-mix(in srgb,var(--muted) 45%,transparent);padding:2px}
+.stars button.on{color:#F5B301}
+@media (max-width:960px){.helpgrid,.revgrid{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.helpgrid,.revgrid{grid-template-columns:1fr}}
+.rvadm{display:grid;gap:10px;margin:12px 0}
+.rvrow{padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:grid;gap:8px}
+.rvrow .top{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.rvrow .top b{flex:1}
+.rvrow p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.rvaddf{display:grid;grid-template-columns:1fr 160px 170px;gap:10px}.rvaddf textarea{grid-column:1/-1}
+@media(max-width:700px){.rvaddf{grid-template-columns:1fr}}
 .iconbtn.userbtn{width:auto;min-width:40px;padding:0 11px;gap:7px;display:inline-flex;align-items:center;font:700 13px var(--f-body);color:var(--fg)}
 .userbtn b{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.userbtn b:empty{display:none}
 @media(max-width:560px){.userbtn b{display:none}}
@@ -798,7 +821,7 @@ body.editing .ph-add:hover{border-color:var(--acc1);color:var(--fg)}
   <div class="wrap">
     <a class="brand" href="#top" id="brandlink"><img src="data:image/jpeg;base64,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" alt="Логотип АРТурок"><b>АРТ</b><span>урок</span></a>
     <nav class="links" aria-label="Разделы">
-      <a href="#prices">Цены</a><a href="#process">Как работаем</a><a href="#works" id="navWorks" hidden>Работы</a><a href="#estimate">Смета</a><a href="#contacts">Контакты</a>
+      <a href="#prices">Цены</a><a href="#process">Как работаем</a><a href="#works" id="navWorks" hidden>Работы</a><a href="#reviews" id="navRev" hidden>Отзывы</a><a href="#estimate">Смета</a><a href="#contacts">Контакты</a>
     </nav>
     <div class="navact">
       <button class="iconbtn userbtn" id="userBtn" type="button" hidden aria-label="Вход для клиентов"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg><b id="userTxt"></b></button>
@@ -968,12 +991,36 @@ body.editing .ph-add:hover{border-color:var(--acc1);color:var(--fg)}
       </div>
     </section>
 
+    <section class="block" id="help">
+      <div class="head">
+        <div><div class="eyebrow">Услуги</div><h2>Чем помогаю</h2></div>
+        <p>Не только новые сайты — беру и задачи по уже готовым.</p>
+      </div>
+      <div class="helpgrid">
+        <div class="hcard"><div class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></div><h3>Починю сайт</h3><p>Разберусь, почему не работает форма, съехала вёрстка или сайт не открывается, и исправлю.</p></div>
+        <div class="hcard"><div class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></div><h3>Ускорю загрузку</h3><p>Сожму картинки и уберу лишнее — сайт будет открываться быстрее, особенно с телефона.</p></div>
+        <div class="hcard"><div class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.5-.8 1.2-1.6-.4-1 .2-2.4 1.6-2.4H17a4 4 0 0 0 4-4c0-5.5-4-10-9-10z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/></svg></div><h3>Обновлю дизайн</h3><p>Переделаю устаревший сайт в современный вид, сохранив тексты и адрес.</p></div>
+        <div class="hcard"><div class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg></div><h3>Подключу заявки</h3><p>Заявки с сайта будут приходить в Telegram или на почту, ничего не потеряется.</p></div>
+        <div class="hcard"><div class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></div><h3>Сделаю админку</h3><p>Чтобы вы сами меняли тексты, цены и фото без программиста.</p></div>
+        <div class="hcard"><div class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M11 18h2"/></svg></div><h3>Адаптирую под телефоны</h3><p>Сайт будет удобно выглядеть на любом экране — от телефона до ноутбука.</p></div>
+      </div>
+    </section>
+
     <section class="block" id="works" hidden>
       <div class="head">
         <div><div class="eyebrow">Портфолио</div><h2>Наши работы</h2></div>
         <p>Сайты, которые уже приносят заявки владельцам. Нажмите на карточку, чтобы открыть проект.</p>
       </div>
       <div class="works" id="worksGrid"></div>
+    </section>
+
+    <section class="block" id="reviews" hidden>
+      <div class="head">
+        <div><div class="eyebrow">Отзывы</div><h2>Что говорят клиенты</h2></div>
+        <p>Отзывы пишут сами клиенты — на сайте или в мессенджере. Я публикую их без правок.</p>
+      </div>
+      <div class="revgrid" id="revList"></div>
+      <div class="revact"><button class="btn primary" type="button" id="revBtn"></button></div>
     </section>
 
     <section class="block" id="estimate">
@@ -1065,7 +1112,23 @@ body.editing .ph-add:hover{border-color:var(--acc1);color:var(--fg)}
       <button type="button" data-tab="works" aria-pressed="false">Наши работы</button>
       <button type="button" data-tab="prices" aria-pressed="false">Тарифы и сроки</button>
       <button type="button" data-tab="pass" aria-pressed="false">Пароль</button>
+      <button type="button" data-tab="reviews" aria-pressed="false" id="tabRevBtn" hidden>Отзывы <em class="tabdot" id="revBadge" hidden>0</em></button>
       <button type="button" data-tab="admins" aria-pressed="false" id="tabAdminsBtn" hidden>Админы</button>
+    </div>
+    <div id="tabReviews" hidden>
+      <div class="panel">
+        <p class="note-muted" style="margin-top:0">Отзывы с сайта появляются у посетителей только после вашего одобрения — так накрученные и фальшивые отзывы на сайт не попадут. Отзыв, который клиент прислал вам в мессенджере, добавьте ниже: он сразу будет опубликован с пометкой, откуда пришёл.</p>
+        <div class="seg" id="rvFilter" role="group"><button type="button" data-rf="pending" aria-pressed="true">На проверке</button><button type="button" data-rf="ok" aria-pressed="false">Опубликованы</button><button type="button" data-rf="hidden" aria-pressed="false">Скрытые</button></div>
+        <div class="rvadm" id="rvAdmList"></div>
+        <h3 style="font-size:16px;margin:22px 0 10px">Добавить отзыв клиента</h3>
+        <form class="rvaddf" id="rvAdd" novalidate>
+          <input class="inp" id="raName" maxlength="40" placeholder="Имя клиента" autocomplete="off">
+          <select class="inp" id="raRate"><option value="5">★★★★★ 5</option><option value="4">★★★★ 4</option><option value="3">★★★ 3</option><option value="2">★★ 2</option><option value="1">★ 1</option></select>
+          <select class="inp" id="raSrc"><option value="telegram">Из Telegram</option><option value="whatsapp">Из WhatsApp</option><option value="max">Из MAX</option><option value="vk">Из ВКонтакте</option><option value="email">По почте</option><option value="person">Сказал лично</option><option value="other">Другое</option></select>
+          <textarea class="inp" id="raText" rows="4" maxlength="800" placeholder="Текст отзыва — так, как его написал клиент"></textarea>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;grid-column:1/-1"><button class="btn primary" type="submit">Опубликовать отзыв</button><span class="note-muted" id="raState" role="status"></span></div>
+        </form>
+      </div>
     </div>
     <div id="tabChat" hidden>
       <div class="chatgrid">
@@ -1199,6 +1262,20 @@ body.editing .ph-add:hover{border-color:var(--acc1);color:var(--fg)}
   </form>
 </div>
 
+<div id="revModal" hidden role="dialog" aria-modal="true" aria-labelledby="rvTitle">
+  <form class="lockbox" id="rvForm" novalidate>
+    <h2 id="rvTitle"></h2>
+    <span class="note-muted" id="rvNote"></span>
+    <div id="rvFields" style="display:grid;gap:10px">
+      <input class="inp" id="rvName" maxlength="40" autocomplete="name">
+      <div class="stars" id="rvStars" role="radiogroup"><button type="button" data-r="1">★</button><button type="button" data-r="2">★</button><button type="button" data-r="3">★</button><button type="button" data-r="4">★</button><button type="button" data-r="5">★</button></div>
+      <textarea class="inp" id="rvText" maxlength="800" rows="5"></textarea>
+      <div class="hp" aria-hidden="true"><input id="rvHp" tabindex="-1" autocomplete="off"></div>
+    </div>
+    <div class="err" id="rvErr" role="alert"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" type="submit" id="rvGo" style="flex:1;justify-content:center"></button><button class="btn ghost" type="button" id="rvClose"></button></div>
+  </form>
+</div>
 <div id="acctModal" hidden role="dialog" aria-modal="true" aria-labelledby="amTitle">
   <form class="lockbox" id="amForm" novalidate>
     <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></div>
@@ -1265,10 +1342,10 @@ window.SITE_BACKEND={mode:"netlify",api:"https://arturok-studio.netlify.app/api"
   }
   // texts and prices come from Netlify's cache; the admin asks for a fresh copy
   const getState=()=>call("GET",token?"/state?v="+Date.now():"/state",undefined,undefined,token?"no-store":"default");
-  const S={content:null,config:null};let ready=null;
+  const S={content:null,config:null,reviews:[]};let ready=null;
   function boot(){
     if(!ready)ready=(async()=>{
-      const s=await getState();S.content=s.content;S.config=s.config;
+      const s=await getState();S.content=s.content;S.config=s.config;S.reviews=s.reviews||[];
       if(token){try{const me=await call("GET","/me");admin=true;window.SITE_BK.adminUser=me.user||"admin";window.SITE_BK.owner=me.owner!==false}catch(e){admin=false}}
       return true})();
     return ready}
@@ -1319,7 +1396,7 @@ window.SITE_BACKEND={mode:"netlify",api:"https://arturok-studio.netlify.app/api"
     const collection=path=>({
       onSnapshot:(cb,err)=>{
         if(path!=="orders"){setTimeout(()=>cb({docs:[]}),0);return()=>{}}
-        const fn=async()=>{try{const j=await call("GET","/orders");lastOrders=j.docs||[];if(j.guard){window.SITE_BK.guard=j.guard;emit("site-guard",j.guard)}cb({docs:lastOrders.map(d=>snap(d.id,d.data))})}catch(e){err&&err(e)}};
+        const fn=async()=>{try{const j=await call("GET","/orders");lastOrders=j.docs||[];if(j.guard){window.SITE_BK.guard=j.guard;emit("site-guard",j.guard)}if(j.revPending!=null)emit("site-revs",j.revPending);cb({docs:lastOrders.map(d=>snap(d.id,d.data))})}catch(e){err&&err(e)}};
         adminFns.add(fn);fn();const stop=poller(fn,8000);return()=>{adminFns.delete(fn);stop()}}});
     return{doc,collection}}
   const userApi={id:async()=>cid,canEdit:async()=>admin,isOwner:async()=>admin,can:async()=>true};
@@ -1353,6 +1430,11 @@ window.SITE_BACKEND={mode:"netlify",api:"https://arturok-studio.netlify.app/api"
     setAdminPassword:(l,p)=>call("PATCH","/admins/"+encodeURIComponent(l),{password:p}),
     deleteAdmin:l=>call("DELETE","/admins/"+encodeURIComponent(l)),
     team:()=>call("GET","/team").then(j=>j.team||[]),
+    getReviews:async()=>{await boot();return S.reviews||[]},
+    postReview:r=>call("POST","/reviews",r),
+    listReviews:()=>call("GET","/reviews").then(j=>j.reviews||[]),
+    setReview:(id,status)=>call("PATCH","/reviews/"+encodeURIComponent(id),{status}),
+    delReview:id=>call("DELETE","/reviews/"+encodeURIComponent(id)),
     chats:()=>call("GET","/chats").then(j=>j.chats||[]),
     chat:id=>call("GET","/chats/"+encodeURIComponent(id)).then(j=>j.chat),
     newChat:(title,members)=>call("POST","/chats",{title,members}),
@@ -1421,6 +1503,7 @@ ru:{title:"АРТурок — разработка сайтов",settings:"На�
   declinedNote:"Заявка отклонена. Напишите в Telegram, если хотите обсудить другой вариант.",finalPrice:"Итоговая смета студии",prelim:"Предварительно, от",you:"Вы",
   noMsgs:"Сообщений пока нет. Ответ студии появится здесь автоматически.",msgPh:"Сообщение для студии",send:"Отправить",
   acctBtn:"Войти",acctTitle:"Вход для клиентов",acctTitleIn:"Ваш аккаунт",tabLogin:"Вход",tabReg:"Регистрация",fLogin:"Логин (латиницей)",fPass:"Пароль (от 8 символов)",fPass2:"Повторите пароль",acctNote:"Аккаунт нужен, чтобы видеть свои заявки и переписку со студией с любого устройства. Заказать смету можно и без него.",acctNoteIn:"Ваши заявки и переписка доступны на любом устройстве после входа.",loggedAs:"Вы вошли как {u}",doLogin:"Войти",doReg:"Создать аккаунт",myOrders:"Мои заявки",logoutC:"Выйти",amClose:"Закрыть",errLogin:"Логин: от 3 до 32 символов — латинские буквы, цифры, точка, дефис или подчёркивание",errShort:"Пароль должен быть не короче 8 символов",errPass2:"Пароли не совпадают",errWrong:"Неверный логин или пароль",errTaken:"Этот логин уже занят, придумайте другой",errGeneric:"Не получилось. Проверьте интернет и попробуйте ещё раз",offerAcct:"Хотите видеть заявку с любого устройства? Создайте аккаунт — это 10 секунд.",
+  revLeave:"Оставить отзыв",revEmpty:"Здесь будут отзывы клиентов. Работали со мной? Оставьте первый — это займёт минуту.",revTitle:"Ваш отзыв",revNote:"Отзыв появится на сайте после проверки.",revName:"Ваше имя",revText:"Расскажите, что сделали и как вам результат",revSend:"Отправить отзыв",revThanks:"Спасибо! Отзыв появится на сайте после проверки.",revErrName:"Напишите имя",revErrText:"Напишите отзыв — хотя бы пару предложений",revErrRate:"Поставьте оценку звёздами",revFrom:"отзыв из {s}",src_telegram:"Telegram",src_whatsapp:"WhatsApp",src_max:"MAX",src_vk:"ВКонтакте",src_email:"почты",src_person:"личной встречи",src_other:"переписки",
   msgFail:"Сообщение не отправлено. Проверьте связь и попробуйте снова",queued:"В очереди…",slowDown:"Слишком часто. Подождите минуту и попробуйте снова",
   busyWait:"Сейчас на сайт приходит слишком много запросов, поэтому включилась защита от атак. Ваша заявка или сообщение в очереди и отправится автоматически через {s} с. Не закрывайте страницу.",
   busyFail:"Сайт сейчас под сильной нагрузкой, и заявка не ушла. Отправьте её в Telegram — текст уже готов:",statusToast:"Статус заявки: <b>{s}</b>",newMsgToast:"Новое сообщение от студии АРТурок",
@@ -1441,6 +1524,7 @@ en:{title:"АРТурок — website development",settings:"Settings",language:
   declinedNote:"The request was declined. Write to me on Telegram if you'd like to discuss another option.",finalPrice:"Studio's final estimate",prelim:"Preliminary, from",you:"You",
   noMsgs:"No messages yet. The studio's reply will appear here automatically.",msgPh:"Message to the studio",send:"Send",
   acctBtn:"Sign in",acctTitle:"Client sign-in",acctTitleIn:"Your account",tabLogin:"Sign in",tabReg:"Sign up",fLogin:"Username (Latin letters)",fPass:"Password (8+ characters)",fPass2:"Repeat password",acctNote:"An account lets you see your requests and messages with the studio from any device. You can request an estimate without one.",acctNoteIn:"Your requests and messages are available on any device after signing in.",loggedAs:"Signed in as {u}",doLogin:"Sign in",doReg:"Create account",myOrders:"My requests",logoutC:"Sign out",amClose:"Close",errLogin:"Username: 3–32 characters — Latin letters, digits, dot, hyphen or underscore",errShort:"Password must be at least 8 characters",errPass2:"Passwords don't match",errWrong:"Wrong username or password",errTaken:"This username is taken, try another",errGeneric:"Something went wrong. Check your connection and try again",offerAcct:"Want to see your request from any device? Create an account — it takes 10 seconds.",
+  revLeave:"Leave a review",revEmpty:"Client reviews will appear here. Worked with me? Leave the first one — it takes a minute.",revTitle:"Your review",revNote:"The review appears on the site after moderation.",revName:"Your name",revText:"Tell what was done and how you like the result",revSend:"Send review",revThanks:"Thank you! Your review will appear after moderation.",revErrName:"Please enter your name",revErrText:"Please write a review — at least a couple of sentences",revErrRate:"Please rate with stars",revFrom:"review via {s}",src_telegram:"Telegram",src_whatsapp:"WhatsApp",src_max:"MAX",src_vk:"VK",src_email:"email",src_person:"in person",src_other:"messages",
   msgFail:"Message not sent. Check your connection and try again",queued:"In queue…",slowDown:"Too often. Please wait a minute and try again",
   busyWait:"The site is getting too many requests right now, so attack protection is on. Your request or message is queued and will be sent automatically in {s} s. Please keep this page open.",
   busyFail:"The site is under heavy load and the request didn't go through. Send it via Telegram — the text is ready:",statusToast:"Request status: <b>{s}</b>",newMsgToast:"New message from АРТурок studio",
@@ -1461,6 +1545,7 @@ zh:{title:"АРТурок — 网站开发",settings:"设置",language:"语言",
   declinedNote:"申请已被拒绝。如需讨论其他方案，请通过 Telegram 联系我。",finalPrice:"工作室最终报价",prelim:"初步估价，起",you:"您",
   noMsgs:"暂无消息。工作室的回复会自动显示在这里。",msgPh:"给工作室留言",send:"发送",
   acctBtn:"登录",acctTitle:"客户登录",acctTitleIn:"您的账户",tabLogin:"登录",tabReg:"注册",fLogin:"用户名（拉丁字母）",fPass:"密码（至少 8 位）",fPass2:"再次输入密码",acctNote:"有了账户，您可以在任何设备上查看自己的申请和与工作室的对话。没有账户也可以申请报价。",acctNoteIn:"登录后，您可以在任何设备上查看申请和对话。",loggedAs:"已登录：{u}",doLogin:"登录",doReg:"创建账户",myOrders:"我的申请",logoutC:"退出",amClose:"关闭",errLogin:"用户名：3–32 个字符，可用拉丁字母、数字、点、连字符或下划线",errShort:"密码至少 8 位",errPass2:"两次输入的密码不一致",errWrong:"用户名或密码错误",errTaken:"该用户名已被占用，请换一个",errGeneric:"操作失败，请检查网络后重试",offerAcct:"想在任何设备上查看申请？创建一个账户，只需 10 秒。",
+  revLeave:"留下评价",revEmpty:"这里将显示客户评价。与我合作过吗？留下第一条评价，只需一分钟。",revTitle:"您的评价",revNote:"评价审核后会显示在网站上。",revName:"您的名字",revText:"说说做了什么、效果如何",revSend:"提交评价",revThanks:"谢谢！评价审核后会显示在网站上。",revErrName:"请填写名字",revErrText:"请写几句评价",revErrRate:"请用星星打分",revFrom:"来自{s}的评价",src_telegram:"Telegram",src_whatsapp:"WhatsApp",src_max:"MAX",src_vk:"VK",src_email:"邮件",src_person:"当面",src_other:"聊天",
   msgFail:"消息未发送，请检查网络后重试",queued:"排队中…",slowDown:"操作过于频繁，请稍等一分钟后再试",
   busyWait:"网站当前请求过多，已启用防攻击保护。您的申请或消息正在排队，将在 {s} 秒后自动发送，请不要关闭页面。",
   busyFail:"网站当前负载过高，申请未能发送。请通过 Telegram 发送——文本已准备好：",statusToast:"申请状态：<b>{s}</b>",newMsgToast:"АРТурок 工作室发来新消息",
@@ -1471,7 +1556,7 @@ const MQ={ru:["Лэндинги","Сайты-визитки","Каталоги",
   zh:["落地页","企业官网","商品目录","购物车与订单","后台管理","响应式","动画","SEO","Telegram 通知","React"]};
 /* page texts and demo texts, keyed by the Russian original */
 const TX={
-en:{"3 200 ₽":"$35","5 900 ₽":"$65","4 200 ₽":"$45","4 300 ₽":"$49","2 900 ₽":"$32","3 600 ₽":"$39","7 400 ₽":"$80","0 ₽":"$0","58 400 ₽":"$640","4 170 ₽":"$46","Цены":"Prices","Как работаем":"How we work","Работы":"Portfolio","Смета":"Estimate","Контакты":"Contacts",
+en:{"Отзывы":"Reviews","Что говорят клиенты":"What clients say","Отзывы пишут сами клиенты — на сайте или в мессенджере. Я публикую их без правок.":"Reviews are written by clients themselves — on the site or in a messenger. I publish them unedited.","Услуги":"Services","Чем помогаю":"How I can help","Не только новые сайты — беру и задачи по уже готовым.":"Not only new websites — I also take on existing ones.","Починю сайт":"Fix your website","Разберусь, почему не работает форма, съехала вёрстка или сайт не открывается, и исправлю.":"I'll find out why a form doesn't work, the layout broke or the site won't open, and fix it.","Ускорю загрузку":"Speed it up","Сожму картинки и уберу лишнее — сайт будет открываться быстрее, особенно с телефона.":"I'll compress images and remove clutter so the site opens faster, especially on phones.","Обновлю дизайн":"Refresh the design","Переделаю устаревший сайт в современный вид, сохранив тексты и адрес.":"I'll turn an outdated site into a modern one, keeping your texts and address.","Подключу заявки":"Connect requests","Заявки с сайта будут приходить в Telegram или на почту, ничего не потеряется.":"Requests from the site will arrive in Telegram or by email, nothing gets lost.","Сделаю админку":"Build an admin panel","Чтобы вы сами меняли тексты, цены и фото без программиста.":"So you can change texts, prices and photos yourself, without a developer.","Адаптирую под телефоны":"Make it mobile-friendly","Сайт будет удобно выглядеть на любом экране — от телефона до ноутбука.":"The site will look great on any screen, from phone to laptop.","3 200 ₽":"$35","5 900 ₽":"$65","4 200 ₽":"$45","4 300 ₽":"$49","2 900 ₽":"$32","3 600 ₽":"$39","7 400 ₽":"$80","0 ₽":"$0","58 400 ₽":"$640","4 170 ₽":"$46","Цены":"Prices","Как работаем":"How we work","Работы":"Portfolio","Смета":"Estimate","Контакты":"Contacts",
 "Студия веб-разработки · Артур Малов":"Web development studio · Artur Malov",
 "Сайты, после которых вам <span class=\"grad\">начинают писать</span> клиенты":"Websites that get <span class=\"grad\">clients writing</span> to you",
 "Лэндинги, сайты-визитки и сайты с приёмом заказов и админкой. Дизайн под ваш бизнес, адаптив под телефоны, понятная смета до старта работ.":"Landing pages, business websites and sites with online orders and an admin panel. Design tailored to your business, mobile-friendly layout and a clear estimate before work starts.",
@@ -1532,7 +1617,7 @@ en:{"3 200 ₽":"$35","5 900 ₽":"$65","4 200 ₽":"$45","4 300 ₽":"$49","2 9
 "Заказов сегодня":"Orders today","Выручка":"Revenue","Средний чек":"Average order","Клиент":"Customer","Сумма":"Amount","Статус":"Status",
 "Анна · 2 букета":"Anna · 2 bouquets","Новый":"New","Олег · Облако":"Tom · Cloud","В пути":"On the way","Мария · Алые розы":"Maria · Red roses","Выполнен":"Done","Собираем":"Preparing",
 "🔔 Новый заказ №1048 · 7 400 ₽":"🔔 New order #1048 · $80"},
-zh:{"3 200 ₽":"¥260","5 900 ₽":"¥480","4 200 ₽":"¥340","4 300 ₽":"¥350","2 900 ₽":"¥240","3 600 ₽":"¥290","7 400 ₽":"¥600","0 ₽":"¥0","58 400 ₽":"¥4,700","4 170 ₽":"¥336","Цены":"价格","Как работаем":"合作流程","Работы":"作品","Смета":"报价","Контакты":"联系方式",
+zh:{"Отзывы":"评价","Что говорят клиенты":"客户怎么说","Отзывы пишут сами клиенты — на сайте или в мессенджере. Я публикую их без правок.":"评价由客户本人在网站或聊天软件中撰写，我原样发布。","Услуги":"服务","Чем помогаю":"我能帮您做什么","Не только новые сайты — беру и задачи по уже готовым.":"不只是新网站，现有网站的问题我也能处理。","Починю сайт":"修复网站","Разберусь, почему не работает форма, съехала вёрстка или сайт не открывается, и исправлю.":"我会查明表单失效、排版错乱或网站打不开的原因并修好。","Ускорю загрузку":"提升速度","Сожму картинки и уберу лишнее — сайт будет открываться быстрее, особенно с телефона.":"压缩图片、去掉多余内容，让网站打开更快，尤其是在手机上。","Обновлю дизайн":"更新设计","Переделаю устаревший сайт в современный вид, сохранив тексты и адрес.":"把过时的网站改成现代风格，保留原有文字和网址。","Подключу заявки":"接入申请通知","Заявки с сайта будут приходить в Telegram или на почту, ничего не потеряется.":"网站上的申请会发送到 Telegram 或邮箱，不会遗漏。","Сделаю админку":"制作后台","Чтобы вы сами меняли тексты, цены и фото без программиста.":"让您无需程序员就能自己修改文字、价格和照片。","Адаптирую под телефоны":"适配手机","Сайт будет удобно выглядеть на любом экране — от телефона до ноутбука.":"网站在任何屏幕上都好看，从手机到笔记本。","3 200 ₽":"¥260","5 900 ₽":"¥480","4 200 ₽":"¥340","4 300 ₽":"¥350","2 900 ₽":"¥240","3 600 ₽":"¥290","7 400 ₽":"¥600","0 ₽":"¥0","58 400 ₽":"¥4,700","4 170 ₽":"¥336","Цены":"价格","Как работаем":"合作流程","Работы":"作品","Смета":"报价","Контакты":"联系方式",
 "Студия веб-разработки · Артур Малов":"网站开发工作室 · Artur Malov",
 "Сайты, после которых вам <span class=\"grad\">начинают писать</span> клиенты":"让<span class=\"grad\">客户主动联系</span>您的网站",
 "Лэндинги, сайты-визитки и сайты с приёмом заказов и админкой. Дизайн под ваш бизнес, адаптив под телефоны, понятная смета до старта работ.":"落地页、企业名片网站，以及支持在线下单和后台管理的网站。为您的业务量身设计，完美适配手机，开工前提供清晰报价。",
@@ -1940,11 +2025,52 @@ $("#guardBtn").addEventListener("click",async()=>{if(!window.SITE_BK||!window.SI
   if(!on&&!confirm("Выключить режим защиты? Автоматическое включение будет на паузе 15 минут."))return;
   try{await window.SITE_BK.setGuard(on);toast(on?"Режим защиты включён на час":"Режим защиты выключен")}catch(ex){toast("Не получилось. Проверьте связь и повторите")}});
 
+/* ---------- client reviews (own hosting) ---------- */
+let pubRevs=[],rvRate=0;
+const stars=n=>"★★★★★".slice(0,n)+"☆☆☆☆☆".slice(0,5-n);
+function renderReviews(){const bk=window.SITE_BK,sec=$("#reviews");if(!bk||!bk.getReviews){sec.hidden=true;return}
+  sec.hidden=false;$("#navRev").hidden=false;$("#revBtn").textContent=T("revLeave");
+  $("#revList").innerHTML=pubRevs.length?pubRevs.map(r=>`<article class="rcard"><div class="rs" aria-label="${r.rating}/5">${stars(r.rating)}</div><p>${esc(r.text)}</p><div class="rm"><b>${esc(r.name)}</b> · ${fmtDate(r.at).split(",")[0]}${r.src&&r.src!=="site"?" · "+esc(T("revFrom",{s:T("src_"+r.src)})):""}</div></article>`).join(""):`<div class="revempty">${T("revEmpty")}</div>`}
+async function loadReviews(){const bk=window.SITE_BK;if(!bk||!bk.getReviews)return renderReviews();try{pubRevs=await bk.getReviews()}catch(e){pubRevs=[]}renderReviews()}
+function rvPaint(){$$("#rvStars button").forEach(b=>b.classList.toggle("on",+b.dataset.r<=rvRate))}
+function openRev(){const m=$("#revModal");m.hidden=false;$("#rvErr").textContent="";$("#rvFields").hidden=false;$("#rvGo").hidden=false;rvRate=0;rvPaint();
+  $("#rvTitle").textContent=T("revTitle");$("#rvNote").textContent=T("revNote");$("#rvName").placeholder=T("revName");$("#rvText").placeholder=T("revText");$("#rvGo").textContent=T("revSend");$("#rvClose").textContent=T("amClose");setTimeout(()=>$("#rvName").focus(),50)}
+const closeRev=()=>{$("#revModal").hidden=true};
+$("#revBtn").addEventListener("click",openRev);$("#rvClose").addEventListener("click",closeRev);
+$("#revModal").addEventListener("click",e=>{if(e.target.id==="revModal")closeRev()});$("#revModal").addEventListener("keydown",e=>{if(e.key==="Escape")closeRev()});
+$$("#rvStars button").forEach(b=>b.addEventListener("click",()=>{rvRate=+b.dataset.r;rvPaint()}));
+$("#rvForm").addEventListener("submit",async e=>{e.preventDefault();const err=$("#rvErr"),name=$("#rvName").value.trim(),text=$("#rvText").value.trim();
+  if(name.length<2){err.textContent=T("revErrName");return}if(!rvRate){err.textContent=T("revErrRate");return}if(text.length<10){err.textContent=T("revErrText");return}
+  const done=()=>{$("#rvFields").hidden=true;$("#rvGo").hidden=true;$("#rvNote").textContent="";err.textContent="";$("#rvTitle").textContent=T("revThanks");$("#rvName").value="";$("#rvText").value=""};
+  if($("#rvHp").value||Date.now()-PAGE_T0<1500){done();return}
+  const go=$("#rvGo");go.disabled=true;err.textContent="…";
+  try{await window.SITE_BK.postReview({name,text,rating:rvRate});done()}
+  catch(ex){const c=String(ex&&ex.code||"");err.textContent=c==="slow-down"?T("slowDown"):c==="busy"?T("busyFail").split(".")[0]:ex.message&&c.startsWith("bad-")?ex.message:T("errGeneric")}finally{go.disabled=false}});
+loadReviews();
+
+/* ---------- reviews in the admin panel ---------- */
+let rvFilt="pending";
+const SRCN={site:"с сайта",telegram:"из Telegram",whatsapp:"из WhatsApp",max:"из MAX",vk:"из ВКонтакте",email:"по почте",person:"лично",other:"из переписки"};
+window.addEventListener("site-revs",e=>{const n=e.detail||0;$("#revBadge").hidden=!n;$("#revBadge").textContent=n;$("#tabRevBtn").hidden=false});
+async function renderRevAdmin(){const box=$("#rvAdmList"),bk=window.SITE_BK;if(!bk||!bk.listReviews)return;box.innerHTML='<div class="note-muted">Загружаю…</div>';
+  let all=[];try{all=await bk.listReviews()}catch(e){box.innerHTML='<div class="note-muted">Не удалось загрузить отзывы. Обновите страницу.</div>';return}
+  const n=all.filter(r=>r.status==="pending").length;$("#revBadge").hidden=!n;$("#revBadge").textContent=n;
+  $$("#rvFilter [data-rf]").forEach(b=>{const k=b.dataset.rf,c=all.filter(r=>r.status===k).length;b.setAttribute("aria-pressed",k===rvFilt);b.innerHTML=(k==="pending"?"На проверке":k==="ok"?"Опубликованы":"Скрытые")+` <em>${c}</em>`});
+  const list=all.filter(r=>r.status===rvFilt);
+  box.innerHTML=list.length?list.map(r=>`<div class="rvrow"><div class="top"><b>${esc(r.name)}</b><span class="rs" style="color:#F5B301">${stars(r.rating)}</span><span class="note-muted">${fmtDate(r.at)} · ${SRCN[r.src]||""}${r.by?" · "+esc(r.by):""}</span></div><p>${esc(r.text)}</p><div style="display:flex;gap:8px;flex-wrap:wrap">${r.status!=="ok"?`<button class="btn primary small" type="button" data-rv="${esc(r.id)}" data-to="ok">Опубликовать</button>`:""}${r.status!=="hidden"?`<button class="btn ghost small" type="button" data-rv="${esc(r.id)}" data-to="hidden">Скрыть</button>`:""}<button class="btn ghost small" type="button" data-rv="${esc(r.id)}" data-to="del" style="color:var(--bad)">Удалить</button></div></div>`).join(""):`<div class="note-muted">${rvFilt==="pending"?"Новых отзывов на проверке нет":rvFilt==="ok"?"Опубликованных отзывов пока нет":"Скрытых отзывов нет"}</div>`}
+$("#rvFilter").addEventListener("click",e=>{const b=e.target.closest("[data-rf]");if(!b)return;rvFilt=b.dataset.rf;renderRevAdmin()});
+$("#rvAdmList").addEventListener("click",async e=>{const b=e.target.closest("[data-rv]");if(!b)return;const bk=window.SITE_BK,id=b.dataset.rv,to=b.dataset.to;
+  if(to==="del"&&!confirm("Удалить отзыв насовсем?"))return;
+  try{to==="del"?await bk.delReview(id):await bk.setReview(id,to);toast(to==="ok"?"Отзыв опубликован — на сайте появится в течение минуты":to==="hidden"?"Отзыв скрыт":"Отзыв удалён");renderRevAdmin()}catch(ex){toast(esc(ex.message||"Не получилось"))}});
+$("#rvAdd").addEventListener("submit",async e=>{e.preventDefault();const st=$("#raState"),name=$("#raName").value.trim(),text=$("#raText").value.trim();
+  if(name.length<2){st.textContent="Напишите имя клиента";return}if(text.length<10){st.textContent="Вставьте текст отзыва (от 10 символов)";return}
+  st.textContent="Публикую…";try{await window.SITE_BK.postReview({name,text,rating:+$("#raRate").value,src:$("#raSrc").value});$("#rvAdd").reset();st.textContent="Готово — отзыв появится на сайте в течение минуты";rvFilt="ok";renderRevAdmin()}catch(ex){st.textContent=ex.message||"Не получилось"}});
+
 /* ---------- client accounts (own hosting) ---------- */
 let amMode="in";
 function renderAcctUI(){
   const bk=window.SITE_BK,ub=$("#userBtn");
-  ub.hidden=!(bk&&bk.register);if(ub.hidden)return;
+  ub.hidden=!(bk&&bk.register);if(!ub.hidden&&!$("#reviews").hidden)renderReviews();if(ub.hidden)return;
   const acc=bk.account;$("#userTxt").textContent=acc||T("acctBtn");ub.setAttribute("aria-label",acc?T("loggedAs",{u:acc}):T("acctTitle"));
   if($("#acctModal").hidden)return;
   const inn=!!acc;$("#amTitle").textContent=inn?T("acctTitleIn"):T("acctTitle");
@@ -2237,9 +2363,9 @@ $("#savePrices").addEventListener("click",async()=>{
   try{await db.doc("site/config").set(data);$("#pState").textContent="Сохранено. Тарифы на сайте обновлены у всех посетителей."}catch(e){$("#pState").textContent="Не сохранилось. Проверьте связь и повторите."}
 });
 $("#resetPrices").addEventListener("click",async()=>{$("#pState").textContent="Возвращаю…";try{await db.doc("site/config").set({updatedAt:Date.now()});$("#pState").textContent="Стандартные тарифы возвращены."}catch(e){$("#pState").textContent="Не получилось. Повторите."}});
-const TABS={chat:"#tabChat",orders:"#tabOrders",texts:"#tabTexts",works:"#tabWorks",prices:"#tabPrices",pass:"#tabPass",admins:"#tabAdmins"};
+const TABS={reviews:"#tabReviews",chat:"#tabChat",orders:"#tabOrders",texts:"#tabTexts",works:"#tabWorks",prices:"#tabPrices",pass:"#tabPass",admins:"#tabAdmins"};
 $$(".tabs button").forEach(b=>b.addEventListener("click",()=>{$$(".tabs button").forEach(x=>x.setAttribute("aria-pressed",x===b));for(const t in TABS)$(TABS[t]).hidden=b.dataset.tab!==t;
-  if(b.dataset.tab==="prices")renderPriceEditor();if(b.dataset.tab==="works"){renderWorksAdmin();ensureAssets()}if(b.dataset.tab==="texts")txStats();if(b.dataset.tab==="admins")renderAdmins();if(b.dataset.tab==="chat"){renderChatList();loadChats();if(chatId)loadChat(true)}}));
+  if(b.dataset.tab==="prices")renderPriceEditor();if(b.dataset.tab==="works"){renderWorksAdmin();ensureAssets()}if(b.dataset.tab==="texts")txStats();if(b.dataset.tab==="admins")renderAdmins();if(b.dataset.tab==="reviews")renderRevAdmin();if(b.dataset.tab==="chat"){renderChatList();loadChats();if(chatId)loadChat(true)}}));
 function setAdmin(on){if(on&&!unlocked){showLock();return}adminOpen=on;document.body.classList.toggle("is-admin",on);scrollTo(0,0);if(on)renderAdmin()}
 $("#adminBtn").addEventListener("click",()=>setAdmin(true));
 
@@ -2341,7 +2467,7 @@ const refsOf=c=>{const s=new Set(Object.values(c.imgs));for(const k in c.photos)
 
 /* keys for every editable text and image */
 const EDIT_SEL="h1,h2,h3,p,li,.eyebrow,.facts b,.facts span,.when,.step .n,.chip,a.btn,button.btn,.val,.note-muted,label,.lbl,.note,.total span,#urg button";
-const EDIT_SKIP="#acctModal,#userBtn,.hp,#plans,#types,#opts,#mineList,#rLines,#sendState,#mq,#worksGrid,svg,.ph-block,#pagesHint,#rNo,#rTotal,#fErr,#pagesOut";
+const EDIT_SKIP="#revModal,#revList,#revBtn,#acctModal,#userBtn,.hp,#plans,#types,#opts,#mineList,#rLines,#sendState,#mq,#worksGrid,svg,.ph-block,#pagesHint,#rNo,#rTotal,#fErr,#pagesOut";
 function keyAll(){
   const cnt={},scopeOf=el=>{const s=el.closest("section[id]");return s?s.id:el.closest("header")?"nav":el.closest("footer")?"foot":"hero"};
   const cands=[...$$("header.nav .brand b,header.nav .brand span,header.nav .links a"),...$("#site").querySelectorAll(EDIT_SEL),...$$("footer span")];

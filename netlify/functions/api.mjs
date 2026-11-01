@@ -273,6 +273,14 @@ async function sweep(st) {
   const list = del.slice(0, 300);
   for (let i = 0; i < list.length; i += 20) await Promise.all(list.slice(i, i + 20).map((k) => st.delete(k)));
 }
+/* ---------- client reviews: clients write them on the site, they appear after the admin approves ---------- */
+const revAll = async (st) => { const d = await st.get("reviews", { type: "json" }); return Array.isArray(d?.list) ? d.list : []; };
+const revPub = (list) => list.filter((r) => r.status === "ok").sort((x, y) => y.at - x.at).slice(0, 30).map(({ id, name, text, rating, at, src }) => ({ id, name, text, rating, at, src }));
+async function revChange(st, fn) {
+  const r = await casJSON(st, "reviews", (d) => { const list = Array.isArray(d?.list) ? d.list : []; const next = fn(list); return next === undefined ? undefined : { list: next.slice(-300) }; });
+  mem.state = null;
+  return r;
+}
 // What a client's save adds compared with what is stored: new requests and messages.
 function changes(old, next) {
   const R0 = isObj(old?.requests) ? old.requests : {}, R1 = isObj(next?.requests) ? next.requests : {};
@@ -359,8 +367,8 @@ async function handle(req, context) {
       const ask = url.searchParams.has("v"), fresh = ask && (await isAdmin(st, req));
       let body = !fresh && mem.state && Date.now() - mem.stateT < 10000 ? mem.state : null;
       if (!body) {
-        const [content, config] = await Promise.all([st.get("site/content", { type: "json" }), st.get("site/config", { type: "json" })]);
-        body = JSON.stringify({ content: content ?? null, config: config ?? null });
+        const [content, config, revs] = await Promise.all([st.get("site/content", { type: "json" }), st.get("site/config", { type: "json" }), revAll(st)]);
+        body = JSON.stringify({ content: content ?? null, config: config ?? null, reviews: revPub(revs) });
         mem.state = body; mem.stateT = Date.now();
       }
       return new Response(body, { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-cache", "netlify-vary": "query=v", "netlify-cdn-cache-control": ask ? "no-store" : "public, s-maxage=15, stale-while-revalidate=30" } });
@@ -456,6 +464,26 @@ async function handle(req, context) {
       return fail(404, "not_found");
     }
     // ----- a client's own requests (identified by a random id kept in their browser) -----
+    if (a === "reviews" && !b && m === "POST") {
+      const body = await readJson(req, 6000), ad = await adminOf(st, req);
+      const name = String(body?.name || "").trim().slice(0, 40), text = String(body?.text || "").trim(), rating = Math.round(Number(body?.rating));
+      if (name.length < 2) return fail(400, "bad-name", "Напишите имя");
+      if (text.length < 10 || text.length > 800) return fail(400, "bad-text", "Отзыв: от 10 до 800 символов");
+      if (!(rating >= 1 && rating <= 5)) return fail(400, "bad-rating", "Поставьте оценку от 1 до 5");
+      if (!ad) {
+        const mode = await getMode(st);
+        if (attackOn(mode) && !(await admitOne(st))) return busy();
+        const k = `g/t/${hourOf(Date.now())}/rev/${ipH}`, c = (await st.get(k, { type: "json" })) || { n: 0 };
+        if (c.n >= 3) return slow();
+        await st.setJSON(k, { n: c.n + 1 });
+      }
+      const SRC = ["telegram", "whatsapp", "vk", "max", "email", "person", "other"];
+      const src = ad ? (SRC.includes(body?.src) ? body.src : "other") : "site";
+      const rv = { id: "v" + Date.now().toString(36) + crypto.randomBytes(3).toString("hex"), name, text, rating, at: Date.now(), status: ad ? "ok" : "pending", src, ...(ad ? { by: ad.u } : {}) };
+      const r = await revChange(st, (list) => (!ad && list.filter((x) => x.status === "pending").length >= 100 ? undefined : [...list, rv]));
+      if (!r || !r.modified) return slow();
+      return json({ ok: true, status: rv.status });
+    }
     if (a === "my") {
       const cid = req.headers.get("x-client") || "";
       if (!CID.test(cid)) return fail(400, "invalid_argument");
@@ -570,7 +598,8 @@ async function handle(req, context) {
       }))).filter((d) => d.data);
       for (const k of [...mem.docs.keys()]) if (!keys.has(k)) mem.docs.delete(k);
       const queued = docs.reduce((n, x) => n + Object.values(isObj(x.data.requests) ? x.data.requests : {}).filter((r) => isObj(r) && r.q && r.status === "new").length, 0);
-      return json({ docs, guard: { ...(await guardInfo(st)), queued } });
+      const revPending = (await revAll(st)).filter((x) => x.status === "pending").length;
+      return json({ docs, guard: { ...(await guardInfo(st)), queued }, revPending });
     }
     const untouched = (r) => isObj(r) && r.q && r.status === "new" && !r.finalPrice && !Object.values(isObj(r.messages) ? r.messages : {}).some((x) => x?.from === "studio");
     async function dropRequests(key, pick) {
@@ -611,6 +640,14 @@ async function handle(req, context) {
         if (acts.length) r.hist = [...(Array.isArray(r0.hist) ? r0.hist : []), ...acts.map((x) => ({ ...x, by: me.u, t }))].slice(-60);
       }
       await st.setJSON(key, next, isObj(cur?.metadata) ? { metadata: cur.metadata } : {});
+      return json({ ok: true });
+    }
+    if (a === "reviews" && !b && m === "GET") return json({ reviews: (await revAll(st)).sort((x, y) => y.at - x.at) });
+    if (a === "reviews" && b && (m === "PATCH" || m === "DELETE")) {
+      const body = m === "PATCH" ? await readJson(req, 2000) : null, st2 = String(body?.status || "");
+      if (m === "PATCH" && !["ok", "hidden", "pending"].includes(st2)) return fail(400, "invalid_argument");
+      const r = await revChange(st, (list) => { const i = list.findIndex((x) => x.id === b); if (i < 0) return undefined; const n = [...list]; if (m === "DELETE") n.splice(i, 1); else n[i] = { ...n[i], status: st2, by: me.u }; return n; });
+      if (!r || !r.modified) return fail(404, "not_found", "Отзыв не найден");
       return json({ ok: true });
     }
     // ----- chats between admins -----
