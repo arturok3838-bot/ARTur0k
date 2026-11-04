@@ -543,10 +543,65 @@ async function handle(req, context) {
       const np = newPass || (pi ? null : passFor(au, cid));
       return json({ ok: true }, 200, np ? { "x-pass": np } : {});
     }
+    // ----- support chat (arturok.online): a visitor writes, admins answer -----
+    if (a === "support" && !b) {
+      const cid = req.headers.get("x-client") || "";
+      if (!CID.test(cid)) return fail(400, "invalid_argument");
+      const key = "support/" + cid;
+      if (m === "GET") {
+        const d = await st.get(key, { type: "json" });
+        return json({ thread: d ? { name: d.name || "", contact: d.contact || "", msgs: (d.msgs || []).slice(-200) } : null });
+      }
+      if (m !== "POST") return fail(405, "method_not_allowed");
+      const body = await readJson(req, 6000), text = String(body?.text || "").trim();
+      if (!text || text.length > 1500) return fail(400, "bad-text", "Сообщение пустое или длиннее 1500 символов");
+      if (!hit(mem.cidHits, "sup:" + cid, 6, 60e3)) return slow();
+      const mode = await getMode(st);
+      if (attackOn(mode) && !trusted(passInfo(au, req.headers.get("x-pass"), cid), mode) && !(await admitOne(st))) return busy();
+      const hk = `g/t/${hourOf(Date.now())}/sup/${ipH}`, hc = (await st.get(hk, { type: "json" })) || { n: 0 };
+      if (hc.n >= 60) return slow();
+      const t = Date.now(), name = String(body?.name || "").trim().slice(0, 40), contact = String(body?.contact || "").trim().slice(0, 80);
+      const r = await casJSON(st, key, (d) => {
+        const x = isObj(d) ? { ...d } : { cid, createdAt: t, msgs: [] };
+        if (name) x.name = name; if (contact) x.contact = contact;
+        x.msgs = [...(Array.isArray(x.msgs) ? x.msgs : []), { from: "client", text, at: t }].slice(-300);
+        x.lastAt = t; x.lastFrom = "client"; x.unread = (x.unread || 0) + 1;
+        return x;
+      });
+      if (!r || !r.modified) return slow();
+      await st.setJSON(hk, { n: hc.n + 1 });
+      return json({ ok: true });
+    }
     // ----- admin only -----
     const me = await adminOf(st, req);
     if (!me) return fail(401, "permission-denied", "Нужен вход в админку");
     if (a === "me") return json({ admin: true, user: me.u, owner: me.owner });
+    if (a === "support") {
+      if (b === "list" && m === "GET") {
+        const { blobs } = await st.list({ prefix: "support/" });
+        const all = (await Promise.all(blobs.map((x) => st.get(x.key, { type: "json" })))).filter(isObj);
+        const list = all.map((d) => { const ms = Array.isArray(d.msgs) ? d.msgs : [], last = ms[ms.length - 1] || null; return { cid: d.cid, name: d.name || "", contact: d.contact || "", unread: d.unread || 0, lastAt: d.lastAt || d.createdAt || 0, last }; });
+        return json({ threads: list.sort((x, y) => y.lastAt - x.lastAt).slice(0, 300) });
+      }
+      if (!CID.test(b || "")) return fail(400, "invalid_argument");
+      const key = "support/" + b;
+      if (!c3 && m === "GET") {
+        const d = await st.get(key, { type: "json" });
+        if (!d) return fail(404, "not_found", "Переписка не найдена");
+        if (d.unread) await casJSON(st, key, (x) => (isObj(x) ? { ...x, unread: 0 } : undefined));
+        return json({ thread: { cid: d.cid, name: d.name || "", contact: d.contact || "", msgs: (d.msgs || []).slice(-300) } });
+      }
+      if (!c3 && m === "DELETE") { await st.delete(key); return json({ ok: true }); }
+      if (c3 === "msg" && m === "POST") {
+        const body = await readJson(req, 6000), text = String(body?.text || "").trim();
+        if (!text || text.length > 2000) return fail(400, "bad-text", "Сообщение пустое или длиннее 2000 символов");
+        const t = Date.now();
+        const r = await casJSON(st, key, (d) => (isObj(d) ? { ...d, msgs: [...(d.msgs || []), { from: "studio", text, at: t, by: me.u }].slice(-300), lastAt: t, lastFrom: "studio", unread: 0 } : undefined));
+        if (!r || !r.modified) return fail(404, "not_found", "Переписка не найдена");
+        return json({ ok: true });
+      }
+      return fail(404, "not_found");
+    }
     if (a === "admins") {
       if (!me.owner) return fail(403, "owner-only", "Управлять админами может только главный админ");
       if (!b && m === "GET") {

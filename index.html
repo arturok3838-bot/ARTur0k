@@ -778,6 +778,31 @@ body.editing .ph-add:hover{border-color:var(--acc1);color:var(--fg)}
 .fdot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--acc1);font-size:0;overflow:hidden}
 .plan .price small.sfx{margin:0 0 0 6px}
 
+
+/* ===== support chat ===== */
+#supBtn{position:fixed;z-index:85;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));display:inline-flex;align-items:center;gap:9px;padding:13px 18px 13px 15px;border:0;border-radius:999px;cursor:pointer;color:#fff;font:700 14.5px var(--f-body);background:linear-gradient(110deg,var(--acc1),var(--acc2));box-shadow:0 14px 30px -10px var(--acc1)}
+#supBtn svg{width:20px;height:20px}
+#supBtn i{position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:50%;background:#FF4D6A;border:2px solid var(--bg)}
+body.sup-on .toasts{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+body.is-admin #supBtn,body.is-admin #supPanel{display:none!important}
+#supPanel{position:fixed;z-index:86;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:min(380px,calc(100vw - 32px));height:min(580px,calc(100vh - 100px));display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:0 30px 70px -20px rgba(0,0,0,.5);overflow:hidden;animation:tin .3s cubic-bezier(.2,.8,.2,1)}
+#supPanel .sh{display:flex;align-items:center;gap:12px;padding:16px 16px 14px;color:#fff;background:linear-gradient(120deg,var(--acc1),var(--acc2))}
+#supPanel .sh .av{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.2);display:grid;place-items:center;font:700 14px var(--f-display);flex:none;position:relative}
+#supPanel .sh .av::after{content:"";position:absolute;right:0;bottom:1px;width:10px;height:10px;border-radius:50%;background:#3DD598;border:2px solid #fff}
+#supPanel .sh b{display:block;font-family:var(--f-display);font-size:15px}#supPanel .sh small{opacity:.85;font-size:12.5px}
+#supPanel .sh button{margin-left:auto;border:0;background:rgba(255,255,255,.18);color:#fff;width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:16px;flex:none}
+#supMsgs{flex:1;overflow:auto;padding:14px;display:grid;gap:8px;align-content:start;grid-auto-rows:max-content;background:var(--bg)}
+#supMsgs .msg{max-width:86%}
+#supMsgs .hello{font-size:14px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;line-height:1.5}
+#supIntro{display:grid;gap:8px;padding:0 14px 4px;background:var(--bg)}
+#supForm{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);background:var(--surface)}
+#supForm textarea{flex:1;min-width:0;resize:none;height:46px;max-height:120px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--bg);font:inherit;font-size:14.5px}
+#supForm textarea:focus{outline:none;border-color:var(--acc1)}
+#supForm button{flex:none;width:46px;height:46px;border:0;border-radius:14px;cursor:pointer;color:#fff;background:linear-gradient(110deg,var(--acc1),var(--acc2));display:grid;place-items:center}
+#supErr{color:var(--bad);font-size:12.5px;padding:0 14px 6px;background:var(--surface)}#supErr:empty{display:none}
+#supPanel.full{inset:0;width:auto;height:auto;border-radius:0;right:0;bottom:0}
+@media (max-width:560px){#supPanel{inset:0;width:auto;height:auto;border-radius:0;right:0;bottom:0}#supBtn span{display:none}#supBtn{padding:14px}}
+.suprow{position:relative}.suprow em{position:absolute;top:10px;right:10px}
 /* ===== site styles: neon (default) / retro / paper / space ===== */
 .sp-style{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .sp-style button{border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:11px;padding:9px 8px;cursor:pointer;font:600 13px var(--f-body);display:flex;align-items:center;gap:7px}
@@ -1411,6 +1436,7 @@ body.editing .ph-add:hover{border-color:var(--acc1);color:var(--fg)}
     </div>
     <div class="tabs seg" role="group" aria-label="Разделы админки">
       <button type="button" data-tab="orders" aria-pressed="true">Заявки</button>
+      <button type="button" data-tab="support" aria-pressed="false" id="tabSupBtn" hidden>Поддержка <em class="tabdot" id="supBadge" hidden>0</em></button>
       <button type="button" data-tab="chat" aria-pressed="false" id="tabChatBtn" hidden>Чат <em class="tabdot" id="chatBadge" hidden>0</em></button>
       <button type="button" data-tab="texts" aria-pressed="false">Тексты и фото</button>
       <button type="button" data-tab="works" aria-pressed="false">Наши работы</button>
@@ -1451,6 +1477,19 @@ body.editing .ph-add:hover{border-color:var(--acc1);color:var(--fg)}
           <div id="chatHead" class="chathead"><span class="note-muted">Выберите чат слева или создайте новый</span></div>
           <div id="chatMsgs" class="thread chatmsgs"></div>
           <form id="chatForm" class="reply" hidden style="margin-top:10px"><input class="inp" id="chatInput" placeholder="Сообщение" maxlength="2000" autocomplete="off"><button class="btn primary small" type="submit">Отправить</button></form>
+        </section>
+      </div>
+    </div>
+    <div id="tabSupport" hidden>
+      <div class="chatgrid">
+        <aside class="panel chatside">
+          <div class="note-muted">Вопросы посетителей из окна «Поддержка» на сайте и с arturok.online</div>
+          <div id="supList" class="chatlist"></div>
+        </aside>
+        <section class="panel chatmain">
+          <div id="supHead" class="chathead"><span class="note-muted">Выберите переписку слева</span></div>
+          <div id="supAdmMsgs" class="thread chatmsgs"></div>
+          <form id="supAdmForm" class="reply" hidden style="margin-top:10px"><input class="inp" id="supAdmInput" placeholder="Ответ клиенту" maxlength="2000" autocomplete="off"><button class="btn primary small" type="submit">Ответить</button></form>
         </section>
       </div>
     </div>
@@ -1551,6 +1590,14 @@ body.editing .ph-add:hover{border-color:var(--acc1);color:var(--fg)}
 
 <footer><div class="wrap"><span>© 2026 АРТурок · разработка сайтов</span><span>Telegram @TheCodingVibe</span></div></footer>
 <div class="toasts" id="toasts" aria-live="polite"></div>
+<button id="supBtn" type="button" hidden aria-controls="supPanel" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span id="supBtnT">Поддержка</span><i id="supDot" hidden></i></button>
+<div id="supPanel" role="dialog" aria-label="Поддержка" hidden>
+  <div class="sh"><div class="av">АМ</div><div><b id="supTitle">Поддержка АРТурок</b><small id="supSub">Отвечает Артур — обычно в течение часа</small></div><button type="button" id="supClose" aria-label="Закрыть">✕</button></div>
+  <div id="supMsgs" aria-live="polite"></div>
+  <div id="supIntro" hidden><input class="inp" id="supName" maxlength="40" autocomplete="name" placeholder="Как к вам обращаться?"><input class="inp" id="supContact" maxlength="80" autocomplete="off" placeholder="Telegram или телефон (необязательно)"></div>
+  <div id="supErr"></div>
+  <form id="supForm" novalidate><textarea id="supText" maxlength="1500" rows="1" placeholder="Напишите вопрос…"></textarea><button type="submit" aria-label="Отправить"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg></button></form>
+</div>
 <div class="busybar" id="busyBar" role="status" aria-live="polite" hidden></div>
 <div id="edbar" hidden><span class="t hint">✏️ Нажмите на текст или фото, чтобы изменить</span><span class="t" id="edLang"></span><span class="t" id="edDirty"></span><button class="btn ghost small" type="button" id="edCancel">Отменить</button><button class="btn primary small" type="button" id="edSave">Сохранить</button></div>
 <div class="edtool" id="edtool" hidden></div>
@@ -1745,6 +1792,12 @@ window.SITE_BACKEND={mode:"netlify",api:"https://arturok-studio.netlify.app/api"
     sendChat:(id,text)=>call("POST","/chats/"+encodeURIComponent(id)+"/msg",{text}),
     readChat:id=>call("POST","/chats/"+encodeURIComponent(id)+"/read",{}),
     delChat:id=>call("DELETE","/chats/"+encodeURIComponent(id)),
+    supGet:()=>call("GET","/support").then(j=>j.thread),
+    supSend:o=>queued(()=>call("POST","/support",o)),
+    supList:()=>call("GET","/support/list").then(j=>j.threads||[]),
+    supThread:c=>call("GET","/support/"+c).then(j=>j.thread),
+    supReply:(c,text)=>call("POST","/support/"+c+"/msg",{text}),
+    supDel:c=>call("DELETE","/support/"+c),
     async logout(){token="";admin=false;ls.del(TK)},
     async changePassword(o,n){const j=await call("POST","/password",{old:o,new:n});if(j.token){token=j.token;ls.set(TK,token)}},
     async setGuard(on){const j=await call("POST","/guard",{on:!!on});window.SITE_BK.guard=j.guard;emit("site-guard",j.guard);return j.guard},
@@ -2413,7 +2466,7 @@ renderAcctUI();
 function syncAdminUI(){const bk=window.SITE_BK;if(!bk)return;const own=bk.owner!==false,u=bk.adminUser||"admin";
   $("#tabAdminsBtn").hidden=!own||!bk.listAdmins;
   $("#acName").textContent=own?"Артур Малов":u;$("#acRole").textContent=own?"главный администратор":"администратор";$("#acAva").textContent=own?"АМ":u.slice(0,2).toUpperCase();
-  const ab=document.querySelector(".acctbtn .ava");if(ab)ab.textContent=own?"АМ":u.slice(0,2).toUpperCase();startChats()}
+  const ab=document.querySelector(".acctbtn .ava");if(ab)ab.textContent=own?"АМ":u.slice(0,2).toUpperCase();startChats();startSupport()}
 
 /* ---------- chats between admins (own hosting) ---------- */
 let chatId=null,chatList=[],chatTimer=null,chatUnread=-1;
@@ -2446,6 +2499,65 @@ $("#chatNew").addEventListener("submit",async e=>{e.preventDefault();const t=$("
   try{const j=await CB().newChat(t,members);$("#chatNew").hidden=true;chatId=j.id;await loadChats();renderChatList();loadChat(true)}catch(ex){$("#chatNewErr").textContent=ex.message||"Не получилось"}});
 $("#chatForm").addEventListener("submit",async e=>{e.preventDefault();const inp=$("#chatInput"),text=inp.value.trim();if(!text||!chatId)return;inp.value="";
   try{await CB().sendChat(chatId,text);await loadChat(true);loadChats()}catch(ex){if(!inp.value)inp.value=text;toast(esc(ex.message||"Сообщение не отправлено"))}});
+/* ---------- support: admin side ---------- */
+let supCid=null,supThreads=[],supTimer=null,supUnread=-1;
+const SB=()=>window.SITE_BK&&window.SITE_BK.supList?window.SITE_BK:null;
+function startSupport(){if(!SB())return;$("#tabSupBtn").hidden=false;loadSupList();clearInterval(supTimer);
+  supTimer=setInterval(()=>{if(document.hidden||!unlocked)return;loadSupList();if(!$("#tabSupport").hidden&&supCid)loadSupThread(false)},5000)}
+async function loadSupList(){const bk=SB();if(!bk||!unlocked)return;try{supThreads=await bk.supList()}catch(e){return}
+  const open=!$("#tabSupport").hidden&&adminOpen,n=supThreads.reduce((s,x)=>s+(open&&x.cid===supCid?0:x.unread),0);
+  if(supUnread>=0&&n>supUnread)toast("Новый вопрос в поддержке");supUnread=n;
+  $("#supBadge").hidden=!n;$("#supBadge").textContent=n;if(!$("#tabSupport").hidden)renderSupList()}
+const supWho=x=>x.name||("Гость "+x.cid.slice(0,4));
+function renderSupList(){$("#supList").innerHTML=supThreads.length?supThreads.map(x=>`<button type="button" class="chatitem" data-sup="${esc(x.cid)}" aria-current="${x.cid===supCid}"><b>${esc(supWho(x))}${x.unread&&x.cid!==supCid?` <em>${x.unread}</em>`:""}</b><small>${x.last?(x.last.from==="studio"?"Вы: ":"")+esc(x.last.text):""}</small><small>${fmtDate(x.lastAt)}</small></button>`).join(""):'<div class="note-muted">Вопросов пока нет</div>'}
+async function loadSupThread(scroll){const bk=SB();if(!supCid)return;let x;
+  try{x=await bk.supThread(supCid)}catch(e){supCid=null;$("#supHead").innerHTML='<span class="note-muted">Переписка удалена</span>';$("#supAdmMsgs").innerHTML="";$("#supAdmForm").hidden=true;return}
+  const box=$("#supAdmMsgs"),atB=box.scrollHeight-box.scrollTop-box.clientHeight<40;
+  $("#supHead").innerHTML=`<div><b>${esc(supWho(x))}</b><div class="note-muted">${x.contact?"Контакт: "+esc(x.contact):"Контакт не указан — отвечайте здесь, клиент увидит ответ на сайте"}</div></div><button class="btn ghost small" type="button" id="supDel" style="color:var(--bad)">Удалить</button>`;
+  box.innerHTML=x.msgs.map(m=>`<div class="msg ${m.from==="studio"?"client":"studio"}">${esc(m.text)}<small>${m.from==="studio"?(m.by&&m.by!=="admin"?esc(m.by):"Вы"):esc(supWho(x))} · ${fmtDate(m.at)}</small></div>`).join("");
+  $("#supAdmForm").hidden=false;if(scroll||atB)box.scrollTop=box.scrollHeight;
+  $("#supDel").addEventListener("click",async()=>{if(!confirm("Удалить эту переписку?"))return;try{await bk.supDel(supCid);supCid=null;$("#supHead").innerHTML='<span class="note-muted">Выберите переписку слева</span>';box.innerHTML="";$("#supAdmForm").hidden=true;loadSupList()}catch(ex){toast(esc(ex.message||"Не получилось"))}});
+  loadSupList()}
+$("#supList").addEventListener("click",e=>{const it=e.target.closest("[data-sup]");if(!it)return;supCid=it.dataset.sup;renderSupList();loadSupThread(true)});
+$("#supAdmForm").addEventListener("submit",async e=>{e.preventDefault();const inp=$("#supAdmInput"),text=inp.value.trim();if(!text||!supCid)return;inp.value="";
+  try{await SB().supReply(supCid,text);await loadSupThread(true)}catch(ex){if(!inp.value)inp.value=text;toast(esc(ex.message||"Не отправлено"))}});
+
+/* ---------- support: visitor side ---------- */
+(function(){
+  const bk=window.SITE_BK;if(!bk||!bk.supGet)return;
+  const SUPT={ru:{btn:"Поддержка",title:"Поддержка АРТурок",sub:"Отвечает Артур — обычно в течение часа",hello:"Здравствуйте! Задайте вопрос о сайте, сроках или цене — отвечу здесь же. Можно закрыть страницу: ответ будет ждать вас в этом окне.",name:"Как к вам обращаться?",contact:"Telegram или телефон (необязательно)",ph:"Напишите вопрос…",needName:"Напишите, как к вам обращаться",you:"Вы",me:"Артур",err:"Не отправилось. Проверьте интернет и повторите",newAns:"Ответ от поддержки"},
+    en:{btn:"Support",title:"АРТурок support",sub:"Artur usually replies within an hour",hello:"Hi! Ask about a website, timing or price — I'll answer right here. You can close the page: the reply will wait for you in this window.",name:"Your name",contact:"Telegram or phone (optional)",ph:"Type your question…",needName:"Please enter your name",you:"You",me:"Artur",err:"Not sent. Check your connection and try again",newAns:"New reply from support"},
+    zh:{btn:"客服",title:"АРТурок 客服",sub:"Artur 通常在一小时内回复",hello:"您好！有关网站、工期或价格的问题都可以在这里提问，我会在这里回复。关闭页面也没关系，回复会保留在此窗口中。",name:"怎么称呼您？",contact:"Telegram 或电话（可选）",ph:"请输入问题…",needName:"请填写称呼",you:"您",me:"Artur",err:"发送失败，请检查网络后重试",newAns:"客服有新回复"}};
+  const t=k=>(SUPT[LANG]||SUPT.ru)[k],ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+  const btn=$("#supBtn"),pan=$("#supPanel"),box=$("#supMsgs");let th=null,timer=null,open=false,sending=false;
+  btn.hidden=false;document.body.classList.add("sup-on");
+  function texts(){$("#supBtnT").textContent=t("btn");$("#supTitle").textContent=t("title");$("#supSub").textContent=t("sub");$("#supName").placeholder=t("name");$("#supContact").placeholder=t("contact");$("#supText").placeholder=t("ph")}
+  const lastStudio=()=>{const m=(th&&th.msgs||[]).filter(x=>x.from==="studio");return m.length?m[m.length-1].at:0};
+  function render(){texts();const ms=th&&th.msgs||[],atB=box.scrollHeight-box.scrollTop-box.clientHeight<40;
+    box.innerHTML=`<div class="hello">${esc(t("hello"))}</div>`+ms.map(m=>`<div class="msg ${m.from==="client"?"client":"studio"}">${esc(m.text)}<small>${m.from==="client"?t("you"):t("me")} · ${fmtDate(m.at)}</small></div>`).join("");
+    $("#supIntro").hidden=!!(th&&th.name);if(atB||open)box.scrollTop=box.scrollHeight}
+  async function pull(){try{const x=await bk.supGet();const before=lastStudio();th=x;const after=lastStudio();
+      if(after){ls.set("art-sup-has","1");const seen=+ls.get("art-sup-seen")||0;if(open){ls.set("art-sup-seen",String(after))}else if(after>seen){$("#supDot").hidden=false;if(before&&after>before)toast(esc(t("newAns")))}}
+      if(open)render()}catch(e){}}
+  function schedule(){clearInterval(timer);timer=setInterval(()=>{if(document.hidden)return;if(open||ls.get("art-sup-has"))pull()},open?6000:45000)}
+  function setOpen(o,full){open=o;pan.hidden=!o;btn.hidden=o;btn.setAttribute("aria-expanded",String(o));pan.classList.toggle("full",!!full);
+    if(o){$("#supDot").hidden=true;render();pull().then(()=>{const a=lastStudio();if(a)ls.set("art-sup-seen",String(a))});setTimeout(()=>$((th&&th.name)?"#supText":"#supName").focus(),50)}schedule()}
+  btn.addEventListener("click",()=>setOpen(true));$("#supClose").addEventListener("click",()=>{setOpen(false);if(location.hash==="#support")history.replaceState(null,"",location.pathname+location.search)});
+  const ta=$("#supText");ta.addEventListener("input",()=>{ta.style.height="46px";ta.style.height=Math.min(120,ta.scrollHeight)+"px"});
+  ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();$("#supForm").requestSubmit()}});
+  $("#supForm").addEventListener("submit",async e=>{e.preventDefault();if(sending)return;const text=ta.value.trim();if(!text)return;
+    const needN=!(th&&th.name),name=$("#supName").value.trim(),contact=$("#supContact").value.trim();
+    if(needN&&name.length<2){$("#supErr").textContent=t("needName");$("#supName").focus();return}
+    $("#supErr").textContent="";sending=true;ta.value="";ta.style.height="46px";
+    const tmp={from:"client",text,at:Date.now()};th=th||{name:"",msgs:[]};th.msgs=[...th.msgs,tmp];render();box.scrollTop=box.scrollHeight;
+    try{await bk.supSend(needN?{text,name,contact}:{text});ls.set("art-sup-has","1");await pull()}
+    catch(ex){th.msgs=th.msgs.filter(m=>m!==tmp);render();if(!ta.value)ta.value=text;$("#supErr").textContent=ex.message&&!/^HTTP|network/.test(ex.message)?ex.message:t("err")}
+    sending=false});
+  function fromHash(){if(location.hash==="#support")setOpen(true,true)}
+  addEventListener("hashchange",fromHash);fromHash();texts();
+  if(ls.get("art-sup-has"))pull();schedule();
+  window.addEventListener("site-lang",texts);
+})();
 let wkDays=7;
 function renderWork(){const tb=$("#wkTable");if(!tb)return;const from=wkDays?Date.now()-wkDays*864e5:0,S={};
   const row=u=>S[u]||(S[u]={u,replies:0,st:0,price:0,reqs:new Set(),last:0});
@@ -2672,9 +2784,9 @@ $("#savePrices").addEventListener("click",async()=>{
   try{await db.doc("site/config").set(data);$("#pState").textContent="Сохранено. Тарифы на сайте обновлены у всех посетителей."}catch(e){$("#pState").textContent="Не сохранилось. Проверьте связь и повторите."}
 });
 $("#resetPrices").addEventListener("click",async()=>{$("#pState").textContent="Возвращаю…";try{await db.doc("site/config").set({updatedAt:Date.now()});$("#pState").textContent="Стандартные тарифы возвращены."}catch(e){$("#pState").textContent="Не получилось. Повторите."}});
-const TABS={reviews:"#tabReviews",chat:"#tabChat",orders:"#tabOrders",texts:"#tabTexts",works:"#tabWorks",prices:"#tabPrices",pass:"#tabPass",admins:"#tabAdmins"};
+const TABS={support:"#tabSupport",reviews:"#tabReviews",chat:"#tabChat",orders:"#tabOrders",texts:"#tabTexts",works:"#tabWorks",prices:"#tabPrices",pass:"#tabPass",admins:"#tabAdmins"};
 $$(".tabs button").forEach(b=>b.addEventListener("click",()=>{$$(".tabs button").forEach(x=>x.setAttribute("aria-pressed",x===b));for(const t in TABS)$(TABS[t]).hidden=b.dataset.tab!==t;
-  if(b.dataset.tab==="prices")renderPriceEditor();if(b.dataset.tab==="works"){renderWorksAdmin();ensureAssets()}if(b.dataset.tab==="texts")txStats();if(b.dataset.tab==="admins")renderAdmins();if(b.dataset.tab==="reviews")renderRevAdmin();if(b.dataset.tab==="chat"){renderChatList();loadChats();if(chatId)loadChat(true)}}));
+  if(b.dataset.tab==="prices")renderPriceEditor();if(b.dataset.tab==="works"){renderWorksAdmin();ensureAssets()}if(b.dataset.tab==="texts")txStats();if(b.dataset.tab==="admins")renderAdmins();if(b.dataset.tab==="reviews")renderRevAdmin();if(b.dataset.tab==="chat"){renderChatList();loadChats();if(chatId)loadChat(true)}if(b.dataset.tab==="support"){renderSupList();loadSupList();if(supCid)loadSupThread(true)}}));
 function setAdmin(on){if(on&&!unlocked){showLock();return}adminOpen=on;document.body.classList.toggle("is-admin",on);scrollTo(0,0);if(on)renderAdmin()}
 $("#adminBtn").addEventListener("click",()=>setAdmin(true));
 
