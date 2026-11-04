@@ -1,6 +1,341 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Поддержка — АРТурок</title><meta name="robots" content="noindex">
-<script>location.replace(new URL("../#support",location.href).href)</script>
-<style>body{margin:0;min-height:100vh;display:grid;place-items:center;font:16px system-ui,sans-serif;background:#0A0913;color:#F1EFF8}a{color:#E257F6}</style>
-</head><body><p>Открываю поддержку… <a href="../#support">Нажмите, если не открылось</a></p></body></html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Поддержка АРТурок</title>
+<meta name="description" content="Поддержка студии АРТурок: задайте вопрос о сайте, сроках или цене — отвечаем здесь же.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Russo+One&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#F3F2F8;--surface:#fff;--surface2:#ECEAF4;--fg:#15121F;--muted:#5E5873;--line:rgba(46,32,96,.13);--acc1:#B31FC9;--acc2:#3446DB;--ok:#14885A;--warn:#B76E00;--bad:#C2304B;
+  --shadow:0 18px 40px -22px rgba(30,20,70,.35);--f-big:"Russo One","Arial Black",sans-serif;--f-body:"Manrope",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0A0913;--surface:#13111F;--surface2:#1C1932;--fg:#F1EFF8;--muted:#A39EBC;--line:rgba(200,180,255,.13);--acc1:#E257F6;--acc2:#7381FF;--ok:#3DD598;--warn:#FFB547;--bad:#FF6B86;--shadow:0 24px 50px -24px rgba(0,0,0,.8);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0A0913;--surface:#13111F;--surface2:#1C1932;--fg:#F1EFF8;--muted:#A39EBC;--line:rgba(200,180,255,.13);--acc1:#E257F6;--acc2:#7381FF;--ok:#3DD598;--warn:#FFB547;--bad:#FF6B86;--shadow:0 24px 50px -24px rgba(0,0,0,.8);color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 var(--f-body);min-height:100vh;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:-10%;z-index:0;pointer-events:none;background:radial-gradient(700px 420px at 90% -10%,color-mix(in srgb,var(--acc2) 16%,transparent),transparent 70%),radial-gradient(600px 460px at -10% 50%,color-mix(in srgb,var(--acc1) 13%,transparent),transparent 70%)}
+a{color:inherit}button,input,select,textarea{font:inherit;color:inherit}
+[hidden]{display:none!important}
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-left,0px)) 0 max(16px,env(safe-area-inset-right,0px))}
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 78%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+header .wrap{display:flex;align-items:center;gap:12px;height:62px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font:400 18px var(--f-big)}
+.brand i{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:#fff;font-style:normal;font-size:15px;background:linear-gradient(140deg,var(--acc1),var(--acc2))}
+.brand span{color:var(--acc1)}
+.sp{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;cursor:pointer;font-weight:700;font-size:14.5px;padding:11px 18px;border-radius:999px;text-decoration:none;transition:transform .2s,box-shadow .2s}
+.btn.primary{color:#fff;background:linear-gradient(110deg,var(--acc1),var(--acc2));box-shadow:0 10px 26px -12px var(--acc1)}
+.btn.primary:hover{transform:translateY(-1px)}
+.btn.ghost{background:var(--surface);border:1px solid var(--line)}
+.btn.small{padding:8px 13px;font-size:13px}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.inp{width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg)}
+.inp:focus,textarea:focus{outline:none;border-color:var(--acc1)}
+.muted{color:var(--muted);font-size:13.5px}
+.err{color:var(--bad);font-size:13px;min-height:18px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--shadow)}
+h1,h2,h3{margin:0;font-weight:400;font-family:var(--f-big);letter-spacing:.005em}
+.big{color:transparent;background:linear-gradient(180deg,#6F7BFF 0%,#3446DB 47%,#7A2BD8 53%,#B31FC9 100%);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 1px 0 #2A2F9E) drop-shadow(0 1px 0 #1B1E63) drop-shadow(0 8px 14px rgba(60,40,160,.3))}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .big{background:linear-gradient(180deg,#fff 0%,#EAE6FF 38%,#A79FD6 49%,#fff 53%,#D3CBF5 100%);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 1px 0 #9A6CFF) drop-shadow(0 1px 0 #5428B4) drop-shadow(0 2px 0 #331279) drop-shadow(0 10px 22px rgba(190,70,255,.45))}}
+/* client view */
+.cl{display:grid;grid-template-columns:1fr 440px;grid-template-areas:"hero chat" "faq chat";grid-template-rows:auto 1fr;gap:0 32px;align-items:start;padding:40px 0 60px}.hero{grid-area:hero}.faq{grid-area:faq}.chat{grid-area:chat}
+.hero h1{font-size:clamp(32px,5vw,54px);line-height:1.06}
+.hero p{color:var(--muted);font-size:17px;max-width:520px;margin:16px 0 22px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{border:1px solid var(--line);background:var(--surface);padding:9px 14px;border-radius:999px;cursor:pointer;font-weight:600;font-size:14px}
+.chips button:hover{border-color:var(--acc1)}
+.status{display:inline-flex;align-items:center;gap:8px;font:500 12.5px var(--f-mono);color:var(--muted);padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);margin-bottom:18px}
+.status i{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 0 var(--ok);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 8px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.faq{margin-top:34px;display:grid;gap:10px}
+.faq details{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.faq summary{cursor:pointer;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:10px}
+.faq summary::after{content:"+";color:var(--acc1);font-weight:800}
+.faq details[open] summary::after{content:"–"}
+.faq p{margin:8px 0 0;color:var(--muted);font-size:15px}
+.chat{display:flex;flex-direction:column;height:min(640px,calc(100vh - 120px));padding:0;overflow:hidden;position:sticky;top:80px}
+.ch{display:flex;align-items:center;gap:12px;padding:16px;color:#fff;background:linear-gradient(120deg,var(--acc1),var(--acc2))}
+.ch .av{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.2);display:grid;place-items:center;font:400 14px var(--f-big);position:relative;flex:none}
+.ch .av::after{content:"";position:absolute;right:0;bottom:1px;width:10px;height:10px;border-radius:50%;background:#3DD598;border:2px solid #fff}
+.ch b{display:block;font-family:var(--f-big);font-weight:400}.ch small{opacity:.85;font-size:12.5px}
+.msgs{flex:1;overflow:auto;padding:14px;display:grid;gap:8px;align-content:start;grid-auto-rows:max-content;background:var(--bg)}
+.msg{max-width:86%;padding:10px 13px;border-radius:14px;font-size:14.5px;line-height:1.45;overflow-wrap:anywhere;white-space:pre-wrap}
+.msg small{display:block;font:400 10.5px var(--f-mono);color:var(--muted);margin-top:4px;white-space:normal}
+.msg.in{background:var(--surface2);border-top-left-radius:4px}
+.msg.out{justify-self:end;background:color-mix(in srgb,var(--acc1) 14%,var(--surface));border-top-right-radius:4px}
+.hello{font-size:14px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.intro{display:grid;gap:8px;padding:10px 12px 0;background:var(--surface)}
+.send{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line);background:var(--surface)}
+.send textarea{flex:1;min-width:0;resize:none;height:46px;max-height:120px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--bg);font-size:14.5px}
+.send button{flex:none;width:46px;height:46px;border:0;border-radius:14px;cursor:pointer;color:#fff;background:linear-gradient(110deg,var(--acc1),var(--acc2));display:grid;place-items:center}
+.cerr{color:var(--bad);font-size:12.5px;padding:0 12px;background:var(--surface)}.cerr:empty{display:none}
+/* login */
+#login{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:20px;background:color-mix(in srgb,var(--bg) 72%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#login form{width:min(380px,100%);display:grid;gap:12px}
+/* staff */
+.st{padding:24px 0 60px}
+.stbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:16px}
+.stbar h1{font-size:26px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;padding:4px;border-radius:999px;background:var(--surface2);width:max-content;max-width:100%;margin-bottom:16px}
+.tabs button{border:0;background:transparent;padding:9px 16px;border-radius:999px;cursor:pointer;font-weight:700;font-size:14px;color:var(--muted)}
+.tabs button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 2px 8px -3px rgba(0,0,0,.3)}
+.dot{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--acc1);color:#fff;font:700 11px var(--f-body);vertical-align:1px;margin-left:4px}
+.grid2{display:grid;grid-template-columns:320px 1fr;gap:16px;align-items:start}
+.list{display:grid;gap:6px;max-height:70vh;overflow:auto}
+.item{display:grid;gap:3px;text-align:left;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer;min-width:0}
+.item[aria-current="true"]{border-color:var(--acc1);box-shadow:0 0 0 1px var(--acc1) inset}
+.item b{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.item small{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tag{font:600 10.5px var(--f-body);padding:2px 8px;border-radius:999px;white-space:nowrap}
+.tag.w{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)}.tag.d{color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,transparent)}
+.thead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.thread{min-height:300px;max-height:58vh;overflow:auto;display:grid;gap:8px;align-content:start;grid-auto-rows:max-content}
+.reply{display:flex;gap:8px;margin-top:10px}.reply .inp{flex:1;min-width:0}
+.seg{display:inline-flex;gap:4px;padding:3px;border-radius:999px;background:var(--surface2);margin-bottom:10px}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:999px;cursor:pointer;font-weight:600;font-size:13px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.kpi{padding:16px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+.kpi span{font-size:12.5px;color:var(--muted)}.kpi b{display:block;font:400 26px var(--f-big);margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:460px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font:600 12px var(--f-body);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+tr:last-child td{border-bottom:0}td.n{font-weight:800;font-variant-numeric:tabular-nums}
+.tw{overflow-x:auto}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.row b{flex:1;min-width:120px}
+.addf{display:grid;grid-template-columns:1fr 1fr 190px auto;gap:10px;margin-top:14px}
+.mem{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.mem label{display:inline-flex;gap:6px;align-items:center;padding:6px 10px;border:1px solid var(--line);border-radius:999px;font-size:13px;cursor:pointer}
+.toasts{position:fixed;z-index:60;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:8px;max-width:min(340px,calc(100vw - 32px))}
+.toast{padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);font-size:14px;animation:tin .3s ease}
+@keyframes tin{from{transform:translateY(12px);opacity:.3}}
+footer{position:relative;z-index:1;padding:26px 0 40px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+@media (max-width:960px){.cl{grid-template-columns:1fr;grid-template-areas:"hero" "chat" "faq";gap:24px}.faq{margin-top:0}.chat{position:static;height:560px}.grid2{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.addf{grid-template-columns:1fr}}
+.sm{display:none;font-weight:700}
+@media (max-width:560px){.hero h1{font-size:30px}.sp .btn span{display:none}.sp .btn .sm{display:inline}.brand{font-size:15px}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <a class="brand" href="./"><i>А</i>АРТ<span>урок</span>&nbsp;·&nbsp;поддержка</a>
+  <div class="sp">
+    <a class="btn ghost small" href="https://arturok.ru/" id="mainLink">← <span>Основной сайт</span></a>
+    <button class="btn ghost small" type="button" id="staffBtn"><span>Вход для сотрудников</span><b class="sm">Вход</b></button>
+    <button class="btn ghost small" type="button" id="logoutBtn" hidden>Выйти</button>
+  </div>
+</div></header>
+
+<main class="wrap">
+  <!-- CLIENT -->
+  <section id="client" class="cl">
+    <div class="hero">
+      <div class="status"><i></i><span id="onl">Онлайн-чат с поддержкой</span></div>
+      <h1 class="big">Чем помочь?</h1>
+      <p>Задайте вопрос о сайте, сроках, цене или о вашей заявке. Отвечаем прямо здесь: можно закрыть страницу и вернуться позже, переписка сохранится.</p>
+      <div class="chips" id="chips">
+        <button type="button">Сколько стоит сайт?</button>
+        <button type="button">Какие сроки?</button>
+        <button type="button">Нужно доработать готовый сайт</button>
+        <button type="button">Как дела с моей заявкой?</button>
+      </div>
+    </div>
+    <div class="faq">
+        <details><summary>Как быстро вы отвечаете?</summary><p>Обычно в течение часа в рабочее время. Ответ появится в окне чата, а если вы оставили Telegram или телефон, можем написать и туда.</p></details>
+        <details><summary>Сколько делается сайт?</summary><p>Лэндинг — от 5 дней. Подробную смету готовим за 1 день после того, как узнаем задачу.</p></details>
+        <details><summary>Можно доработать уже готовый сайт?</summary><p>Да: починить форму, ускорить загрузку, обновить дизайн, адаптировать под телефоны, подключить заявки в Telegram.</p></details>
+        <details><summary>Где посмотреть цены?</summary><p>На основном сайте в разделе «Цены» и в калькуляторе сметы. Точную сумму фиксируем до начала работ.</p></details>
+    </div>
+    <div class="panel chat">
+      <div class="ch"><div class="av">АМ</div><div><b>Поддержка АРТурок</b><small>Обычно отвечаем в течение часа</small></div></div>
+      <div class="msgs" id="cMsgs" aria-live="polite"></div>
+      <div class="intro" id="cIntro"><input class="inp" id="cName" maxlength="40" autocomplete="name" placeholder="Как к вам обращаться?"><input class="inp" id="cContact" maxlength="80" autocomplete="off" placeholder="Telegram или телефон (необязательно)"></div>
+      <div class="cerr" id="cErr"></div>
+      <form class="send" id="cForm" novalidate><textarea id="cText" maxlength="1500" rows="1" placeholder="Напишите вопрос…"></textarea><button type="submit" aria-label="Отправить"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg></button></form>
+    </div>
+  </section>
+
+  <!-- STAFF -->
+  <section id="staff" class="st" hidden>
+    <div class="stbar"><h1 class="big">Панель поддержки</h1><span class="muted" id="who"></span></div>
+    <div class="tabs" role="group" aria-label="Разделы">
+      <button type="button" data-t="q" aria-pressed="true">Вопросы<em class="dot" id="qDot" hidden></em></button>
+      <button type="button" data-t="chat" aria-pressed="false">Чат команды<em class="dot" id="chDot" hidden></em></button>
+      <button type="button" data-t="stats" aria-pressed="false">Статистика</button>
+      <button type="button" data-t="team" aria-pressed="false" id="teamTab" hidden>Сотрудники</button>
+    </div>
+
+    <div id="tq" class="grid2">
+      <aside class="panel"><div class="seg" id="qFilter"><button type="button" data-f="wait" aria-pressed="true">Ждут ответа</button><button type="button" data-f="all" aria-pressed="false">Все</button></div><div class="list" id="qList"></div></aside>
+      <section class="panel"><div class="thead" id="qHead"><span class="muted">Выберите вопрос слева</span></div><div class="thread" id="qMsgs"></div>
+        <form class="reply" id="qForm" hidden><input class="inp" id="qInput" maxlength="2000" autocomplete="off" placeholder="Ответ клиенту"><button class="btn primary small" type="submit">Ответить</button></form></section>
+    </div>
+
+    <div id="tchat" class="grid2" hidden>
+      <aside class="panel"><button class="btn primary small" type="button" id="chNewBtn">+ Новый чат</button>
+        <form id="chNew" hidden novalidate style="margin-top:10px"><input class="inp" id="chTitle" maxlength="80" placeholder="Название чата" autocomplete="off"><div class="muted" style="margin-top:8px">Участники:</div><div class="mem" id="chMem"></div><div style="display:flex;gap:8px"><button class="btn primary small" type="submit">Создать</button><button class="btn ghost small" type="button" id="chCancel">Отмена</button></div><div class="err" id="chErr"></div></form>
+        <div class="list" id="chList" style="margin-top:12px"></div></aside>
+      <section class="panel"><div class="thead" id="chHead"><span class="muted">Выберите чат или создайте новый</span></div><div class="thread" id="chMsgs"></div>
+        <form class="reply" id="chForm" hidden><input class="inp" id="chInput" maxlength="2000" autocomplete="off" placeholder="Сообщение команде"><button class="btn primary small" type="submit">Отправить</button></form></section>
+    </div>
+
+    <div id="tstats" hidden>
+      <div class="seg" id="sPer"><button type="button" data-d="7" aria-pressed="true">7 дней</button><button type="button" data-d="30" aria-pressed="false">30 дней</button><button type="button" data-d="0" aria-pressed="false">Всё время</button></div>
+      <div class="kpis"><div class="kpi"><span>Новых обращений</span><b id="kNew">0</b></div><div class="kpi"><span>Вопросов от клиентов</span><b id="kQ">0</b></div><div class="kpi"><span>Ответов отправлено</span><b id="kA">0</b></div><div class="kpi"><span>Ждут ответа сейчас</span><b id="kW">0</b></div></div>
+      <div class="panel tw"><table id="sTable"></table></div>
+    </div>
+
+    <div id="tteam" hidden>
+      <div class="panel">
+        <p class="muted" style="margin-top:0">Сотрудник с доступом «Только поддержка» отвечает на вопросы и пишет в чат команды, но не может зайти в админку основного сайта. «Полный доступ» — и поддержка, и админка сайта.</p>
+        <div id="tmList" style="display:grid;gap:8px"></div>
+        <form class="addf" id="tmForm" novalidate><input class="inp" id="tmLogin" maxlength="32" autocomplete="off" placeholder="Логин (латиница)"><input class="inp" id="tmPw" type="password" autocomplete="new-password" placeholder="Пароль от 8 символов"><select class="inp" id="tmRole"><option value="support">Только поддержка</option><option value="full">Полный доступ</option></select><button class="btn primary" type="submit">Добавить</button></form>
+        <div class="err" id="tmErr"></div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer><div class="wrap">© 2026 АРТурок · поддержка · Telegram @TheCodingVibe</div></footer>
+
+<div id="login" hidden><form class="panel" id="lgForm" novalidate>
+  <h2 style="font-size:20px">Вход для сотрудников</h2>
+  <input class="inp" id="lgLogin" autocomplete="username" placeholder="Логин" maxlength="32">
+  <input class="inp" id="lgPw" type="password" autocomplete="current-password" placeholder="Пароль">
+  <div class="err" id="lgErr" role="alert"></div>
+  <div style="display:flex;gap:8px"><button class="btn primary" type="submit" id="lgGo">Войти</button><button class="btn ghost" type="button" id="lgCancel">Отмена</button></div>
+</form></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const fmt=t=>{if(!t)return "—";try{return new Date(t).toLocaleString("ru-RU",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})}catch(e){return ""}};
+function toast(m){const b=$("#toasts"),t=document.createElement("div");t.className="toast";t.textContent=m;b.appendChild(t);while(b.children.length>3)b.firstElementChild.remove();setTimeout(()=>t.remove(),4500)}
+const H=location.hostname,LOCAL=H==="localhost"||H==="127.0.0.1";
+const API=LOCAL?"/api":"https://arturok-studio.netlify.app/api",XO=/^https?:/.test(API);
+if(!LOCAL&&!/arturok\.ru$/.test(H))$("#mainLink").href="https://arturok.ru/";
+const CK="art-nl-client",PK="art-nl-pass",TK="art-sup-token",UK="art-sup-user";
+let cid=ls.get(CK);if(!/^[a-f0-9]{32}$/.test(cid||"")){cid=Array.from(crypto.getRandomValues(new Uint8Array(16)),x=>x.toString(16).padStart(2,"0")).join("");ls.set(CK,cid)}
+let token=ls.get(TK)||"",me=null;try{me=JSON.parse(ls.get(UK)||"null")}catch(e){}
+async function call(method,path,body){
+  const h={"X-Client":cid};const pass=ls.get(PK);if(pass)h["X-Pass"]=pass;if(token)h.Authorization="Bearer "+token;
+  let r;try{
+    if(XO){const env={_m:method,_h:h};if(body!==undefined)env._b=body;r=await fetch(API+path,{method:"POST",headers:{"Content-Type":"text/plain;charset=UTF-8"},body:JSON.stringify(env),cache:"no-store"})}
+    else{const o={method,headers:{...h},cache:"no-store"};if(body!==undefined){o.body=JSON.stringify(body);o.headers["Content-Type"]="application/json"}r=await fetch(API+path,o)}
+  }catch(e){throw Object.assign(new Error("Нет связи с сервером. Проверьте интернет"),{code:"network"})}
+  const np=r.headers.get("x-pass");if(np)ls.set(PK,np);
+  let j={};try{j=await r.json()}catch(e){}
+  if(r.status===401&&token&&path!=="/login"){logout(true)}
+  if(!r.ok)throw Object.assign(new Error(j.error||("Ошибка "+r.status)),{code:j.code||"",status:r.status,retry:+(j.retry||r.headers.get("retry-after"))||0});
+  return j}
+
+/* ===== client chat ===== */
+let th=null,sending=false;
+const box=$("#cMsgs"),ta=$("#cText");
+function cRender(){const ms=th&&th.msgs||[],atB=box.scrollHeight-box.scrollTop-box.clientHeight<60;
+  box.innerHTML='<div class="hello">Здравствуйте! Напишите вопрос — ответим здесь же. Переписка сохранится в этом браузере.</div>'+ms.map(m=>`<div class="msg ${m.from==="client"?"out":"in"}">${esc(m.text)}<small>${m.from==="client"?"Вы":"Поддержка"} · ${fmt(m.at)}</small></div>`).join("");
+  $("#cIntro").hidden=!!(th&&th.name);if(atB)box.scrollTop=box.scrollHeight}
+async function cPull(){try{const prev=JSON.stringify(th&&th.msgs||[]);const x=(await call("GET","/support")).thread;th=x;if(JSON.stringify(th&&th.msgs||[])!==prev)cRender();
+  const st=(th&&th.msgs||[]).filter(m=>m.from==="studio");if(st.length)ls.set("art-sup-seen",String(st[st.length-1].at))}catch(e){}}
+$("#chips").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;ta.value=b.textContent;ta.focus()});
+ta.addEventListener("input",()=>{ta.style.height="46px";ta.style.height=Math.min(120,ta.scrollHeight)+"px"});
+ta.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();$("#cForm").requestSubmit()}});
+$("#cForm").addEventListener("submit",async e=>{e.preventDefault();if(sending)return;const text=ta.value.trim();if(!text)return;
+  const needN=!(th&&th.name),name=$("#cName").value.trim(),contact=$("#cContact").value.trim();
+  if(needN&&name.length<2){$("#cErr").textContent="Напишите, как к вам обращаться";$("#cName").focus();return}
+  $("#cErr").textContent="";sending=true;ta.value="";ta.style.height="46px";
+  const tmp={from:"client",text,at:Date.now()};th=th||{name:"",msgs:[]};th.msgs=[...th.msgs,tmp];cRender();box.scrollTop=box.scrollHeight;
+  for(let i=0;;i++){try{await call("POST","/support",needN?{text,name,contact}:{text});ls.set("art-sup-has","1");await cPull();break}
+    catch(ex){if(ex.code==="busy"&&i<20){$("#cErr").textContent="Сейчас много посетителей — сообщение отправится само через несколько секунд";await new Promise(r=>setTimeout(r,Math.max(3,Math.min(60,ex.retry||15))*1000));continue}
+      th.msgs=th.msgs.filter(m=>m!==tmp);cRender();if(!ta.value)ta.value=text;$("#cErr").textContent=ex.message;break}}
+  if($("#cErr").textContent.startsWith("Сейчас"))$("#cErr").textContent="";sending=false});
+cRender();cPull();
+setInterval(()=>{if(!document.hidden&&$("#staff").hidden)cPull()},6000);
+
+/* ===== staff ===== */
+function logout(silent){token="";me=null;ls.del(TK);ls.del(UK);showStaff(false);if(!silent)toast("Вы вышли")}
+$("#logoutBtn").addEventListener("click",()=>logout());
+$("#staffBtn").addEventListener("click",()=>{if(token&&me){showStaff(true);return}$("#login").hidden=false;$("#lgErr").textContent="";setTimeout(()=>$("#lgLogin").focus(),30)});
+$("#lgCancel").addEventListener("click",()=>{$("#login").hidden=true});
+$("#lgForm").addEventListener("submit",async e=>{e.preventDefault();const login=$("#lgLogin").value.trim(),pw=$("#lgPw").value;if(!pw){$("#lgErr").textContent="Введите пароль";return}
+  $("#lgGo").disabled=true;$("#lgErr").textContent="Вхожу…";
+  try{const j=await call("POST","/login",{login,password:pw,site:"support"});token=j.token;me={u:j.user,owner:!!j.owner,role:j.role||"full"};ls.set(TK,token);ls.set(UK,JSON.stringify(me));$("#login").hidden=true;$("#lgPw").value="";showStaff(true);toast("Вы вошли как "+me.u)}
+  catch(ex){$("#lgErr").textContent=ex.status===401?"Неверный логин или пароль":ex.message;$("#lgPw").value=""}
+  $("#lgGo").disabled=false});
+
+let tab="q",timer=null;
+function showStaff(on){$("#client").hidden=on;$("#staff").hidden=!on;$("#staffBtn").hidden=on;$("#logoutBtn").hidden=!on;
+  clearInterval(timer);if(!on)return;$("#who").textContent=(me.owner?"главный админ":me.role==="support"?"сотрудник поддержки":"админ")+" · "+me.u;$("#teamTab").hidden=!me.owner;
+  scrollTo(0,0);tick(true);timer=setInterval(()=>{if(!document.hidden)tick(false)},5000)}
+$$(".tabs button").forEach(b=>b.addEventListener("click",()=>{tab=b.dataset.t;$$(".tabs button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  for(const t of ["q","chat","stats","team"])$("#t"+t).hidden=t!==tab;tick(true)}));
+async function tick(full){await Promise.all([qLoad(),chLoad()]);if(tab==="q"&&qCid)qOpen(false);if(tab==="chat"&&chId)chOpen(false);if(full&&tab==="stats")sLoad();if(full&&tab==="team")tmLoad()}
+
+/* questions */
+let qs=[],qCid=null,qF="wait",qPrev=-1;
+const who=x=>x.name||("Гость "+String(x.cid).slice(0,4));
+async function qLoad(){try{qs=(await call("GET","/support/list")).threads||[]}catch(e){return}
+  const w=qs.filter(x=>x.waiting).length;$("#qDot").hidden=!w;$("#qDot").textContent=w;if(qPrev>=0&&w>qPrev)toast("Новый вопрос от клиента");qPrev=w;qRender()}
+function qRender(){const l=qF==="wait"?qs.filter(x=>x.waiting):qs;
+  $("#qList").innerHTML=l.length?l.map(x=>`<button type="button" class="item" data-c="${esc(x.cid)}" aria-current="${x.cid===qCid}"><b><span>${esc(who(x))}</span><span class="tag ${x.waiting?"w":"d"}">${x.waiting?"ждёт ответа":"отвечено"}</span></b><small>${x.last?(x.last.from==="studio"?(esc(x.last.by||"admin")+": "):"")+esc(x.last.text):""}</small><small>${fmt(x.lastAt)}</small></button>`).join(""):`<div class="muted">${qF==="wait"?"Все вопросы отвечены 🎉":"Вопросов пока нет"}</div>`}
+$("#qFilter").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;qF=b.dataset.f;$$("#qFilter button").forEach(x=>x.setAttribute("aria-pressed",x===b));qRender()});
+$("#qList").addEventListener("click",e=>{const it=e.target.closest("[data-c]");if(!it)return;qCid=it.dataset.c;qRender();qOpen(true)});
+async function qOpen(scroll){if(!qCid)return;let x;try{x=(await call("GET","/support/"+qCid)).thread}catch(e){qCid=null;$("#qHead").innerHTML='<span class="muted">Переписка удалена</span>';$("#qMsgs").innerHTML="";$("#qForm").hidden=true;return}
+  const b=$("#qMsgs"),atB=b.scrollHeight-b.scrollTop-b.clientHeight<40;
+  $("#qHead").innerHTML=`<div><b>${esc(who(x))}</b><div class="muted">${x.contact?"Контакт: "+esc(x.contact):"Контакт не указан — клиент увидит ответ на сайте"}</div></div>${me.role!=="support"||me.owner?'<button class="btn ghost small" type="button" id="qDel" style="color:var(--bad)">Удалить</button>':""}`;
+  b.innerHTML=x.msgs.map(m=>`<div class="msg ${m.from==="studio"?"out":"in"}">${esc(m.text)}<small>${m.from==="studio"?(m.by===me.u?"Вы":esc(m.by||"admin")):esc(who(x))} · ${fmt(m.at)}</small></div>`).join("");
+  $("#qForm").hidden=false;if(scroll||atB)b.scrollTop=b.scrollHeight;
+  $("#qDel")?.addEventListener("click",async()=>{if(!confirm("Удалить эту переписку?"))return;try{await call("DELETE","/support/"+qCid);qCid=null;$("#qHead").innerHTML='<span class="muted">Выберите вопрос слева</span>';b.innerHTML="";$("#qForm").hidden=true;qLoad()}catch(ex){toast(ex.message)}})}
+$("#qForm").addEventListener("submit",async e=>{e.preventDefault();const i=$("#qInput"),text=i.value.trim();if(!text||!qCid)return;i.value="";
+  try{await call("POST","/support/"+qCid+"/msg",{text});await qOpen(true);qLoad()}catch(ex){if(!i.value)i.value=text;toast(ex.message)}});
+
+/* team chat */
+let chs=[],chId=null,chPrev=-1;
+async function chLoad(){try{chs=(await call("GET","/chats")).chats||[]}catch(e){return}
+  const n=chs.reduce((s,c)=>s+(tab==="chat"&&c.id===chId?0:c.unread),0);$("#chDot").hidden=!n;$("#chDot").textContent=n;if(chPrev>=0&&n>chPrev)toast("Новое сообщение в чате команды");chPrev=n;chRender()}
+function chRender(){$("#chList").innerHTML=chs.length?chs.map(c=>`<button type="button" class="item" data-ch="${esc(c.id)}" aria-current="${c.id===chId}"><b><span>${esc(c.title)}</span>${c.unread&&c.id!==chId?`<em class="dot">${c.unread}</em>`:""}</b><small>${c.last?esc(c.last.by===me.u?"Вы":c.last.by)+": "+esc(c.last.text):"Пока нет сообщений"}</small></button>`).join(""):'<div class="muted">Чатов пока нет</div>'}
+$("#chList").addEventListener("click",e=>{const it=e.target.closest("[data-ch]");if(!it)return;chId=it.dataset.ch;chRender();chOpen(true)});
+async function chOpen(scroll){if(!chId)return;let c;try{c=(await call("GET","/chats/"+encodeURIComponent(chId))).chat}catch(e){chId=null;$("#chHead").innerHTML='<span class="muted">Чат удалён</span>';$("#chMsgs").innerHTML="";$("#chForm").hidden=true;return}
+  const b=$("#chMsgs"),atB=b.scrollHeight-b.scrollTop-b.clientHeight<40;
+  $("#chHead").innerHTML=`<div><b>${esc(c.title)}</b><div class="muted">Участники: ${c.members.map(esc).join(", ")}</div></div>${me.owner||c.createdBy===me.u?'<button class="btn ghost small" type="button" id="chDel" style="color:var(--bad)">Удалить чат</button>':""}`;
+  b.innerHTML=c.messages.length?c.messages.map(m=>`<div class="msg ${m.by===me.u?"out":"in"}">${esc(m.text)}<small>${m.by===me.u?"Вы":esc(m.by)} · ${fmt(m.at)}</small></div>`).join(""):'<div class="muted">Напишите первое сообщение</div>';
+  $("#chForm").hidden=false;if(scroll||atB)b.scrollTop=b.scrollHeight;
+  $("#chDel")?.addEventListener("click",async()=>{if(!confirm(`Удалить чат «${c.title}»?`))return;try{await call("DELETE","/chats/"+encodeURIComponent(c.id));chId=null;$("#chHead").innerHTML='<span class="muted">Выберите чат</span>';b.innerHTML="";$("#chForm").hidden=true;chLoad()}catch(ex){toast(ex.message)}});
+  if(c.unread)call("POST","/chats/"+encodeURIComponent(c.id)+"/read",{}).then(chLoad).catch(()=>{})}
+$("#chNewBtn").addEventListener("click",async()=>{$("#chNew").hidden=false;$("#chErr").textContent="";$("#chTitle").value="";$("#chMem").innerHTML='<span class="muted">Загружаю…</span>';
+  try{const t=((await call("GET","/team")).team||[]).filter(u=>u!==me.u);$("#chMem").innerHTML=t.length?t.map(u=>`<label><input type="checkbox" value="${esc(u)}" checked>${esc(u)}</label>`).join(""):'<span class="muted">Других сотрудников пока нет</span>'}catch(e){$("#chMem").innerHTML=""}});
+$("#chCancel").addEventListener("click",()=>{$("#chNew").hidden=true});
+$("#chNew").addEventListener("submit",async e=>{e.preventDefault();const t=$("#chTitle").value.trim();if(!t){$("#chErr").textContent="Напишите название";return}
+  try{const j=await call("POST","/chats",{title:t,members:$$("#chMem input:checked").map(i=>i.value)});$("#chNew").hidden=true;chId=j.id;await chLoad();chOpen(true)}catch(ex){$("#chErr").textContent=ex.message}});
+$("#chForm").addEventListener("submit",async e=>{e.preventDefault();const i=$("#chInput"),text=i.value.trim();if(!text||!chId)return;i.value="";
+  try{await call("POST","/chats/"+encodeURIComponent(chId)+"/msg",{text});await chOpen(true);chLoad()}catch(ex){if(!i.value)i.value=text;toast(ex.message)}});
+
+/* stats */
+let sDays=7;
+$("#sPer").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;sDays=+b.dataset.d;$$("#sPer button").forEach(x=>x.setAttribute("aria-pressed",x===b));sLoad()});
+async function sLoad(){let s;try{s=await call("GET","/support/stats?days="+sDays)}catch(e){$("#sTable").innerHTML=`<tr><td>${esc(e.message)}</td></tr>`;return}
+  $("#kNew").textContent=s.newThreads;$("#kQ").textContent=s.questions;$("#kA").textContent=s.answered;$("#kW").textContent=s.waiting;
+  $("#sTable").innerHTML='<tr><th>Сотрудник</th><th>Ответов</th><th>Клиентов</th><th>Последний ответ</th></tr>'+(s.rows.length?s.rows.map(r=>`<tr><td>${esc(r.u)}${r.u===me.u?" (вы)":""}</td><td class="n">${r.replies}</td><td class="n">${r.threads}</td><td>${fmt(r.last)}</td></tr>`).join(""):'<tr><td colspan="4" class="muted">За этот период ответов не было</td></tr>')}
+
+/* team (owner) */
+async function tmLoad(){const l=$("#tmList");l.innerHTML='<div class="muted">Загружаю…</div>';
+  try{const a=(await call("GET","/admins")).admins||[];
+    l.innerHTML=`<div class="row"><b>admin</b><span class="muted">главный админ</span></div>`+a.map(x=>`<div class="row"><b>${esc(x.login)}</b><span class="muted">${x.role==="support"?"только поддержка":"полный доступ"} · с ${fmt(x.createdAt)}</span><button class="btn ghost small" type="button" data-pw="${esc(x.login)}">Новый пароль</button><button class="btn ghost small" type="button" data-del="${esc(x.login)}" style="color:var(--bad)">Удалить</button></div>`).join("")}
+  catch(e){l.innerHTML=`<div class="muted">${esc(e.message)}</div>`}}
+$("#tmList").addEventListener("click",async e=>{const p=e.target.closest("[data-pw]"),d=e.target.closest("[data-del]");
+  if(p){const v=prompt(`Новый пароль для «${p.dataset.pw}» (от 8 символов):`);if(v==null)return;if(v.length<8){toast("Пароль короче 8 символов");return}
+    try{await call("PATCH","/admins/"+encodeURIComponent(p.dataset.pw),{password:v});toast("Пароль изменён")}catch(ex){toast(ex.message)}}
+  if(d){if(!confirm(`Удалить сотрудника «${d.dataset.del}»? Он сразу потеряет доступ.`))return;try{await call("DELETE","/admins/"+encodeURIComponent(d.dataset.del));toast("Сотрудник удалён");tmLoad()}catch(ex){toast(ex.message)}}});
+$("#tmForm").addEventListener("submit",async e=>{e.preventDefault();const login=$("#tmLogin").value.trim().toLowerCase(),password=$("#tmPw").value,role=$("#tmRole").value;$("#tmErr").textContent="";
+  try{await call("POST","/admins",{login,password,role});$("#tmForm").reset();toast("Сотрудник добавлен: "+login);tmLoad()}catch(ex){$("#tmErr").textContent=ex.message}});
+
+if(token&&me){call("GET","/me").then(j=>{me={u:j.user,owner:!!j.owner,role:j.role||"full"};ls.set(UK,JSON.stringify(me));if(location.hash==="#staff")showStaff(true)}).catch(()=>{})}
+if(location.hash==="#staff")$("#staffBtn").click();
+})();
+</script>
+</body>
+</html>

@@ -138,8 +138,8 @@ async function adminOf(st, req) {
   for (const fresh of [false, true]) {
     if (fresh && Date.now() - authT < 2000) return null;
     const a = await getAuth(st, fresh), d = readTok(a, tok);
-    if (d && (!d.u || d.u === OWNER) && d.v === (a.ver || 1)) return { u: OWNER, owner: true };
-    if (d && d.u && d.u !== OWNER) { const r = await adminRec(st, d.u, fresh); if (r && d.v === (r.ver || 1)) return { u: d.u, owner: false }; }
+    if (d && (!d.u || d.u === OWNER) && d.v === (a.ver || 1)) return { u: OWNER, owner: true, role: "full" };
+    if (d && d.u && d.u !== OWNER) { const r = await adminRec(st, d.u, fresh); if (r && d.v === (r.ver || 1)) return { u: d.u, owner: false, role: r.role === "support" ? "support" : "full" }; }
   }
   return null;
 }
@@ -409,12 +409,13 @@ async function handle(req, context) {
         if (ok === null) return fail(503, "not-configured", "ADMIN_PASSWORD не задан");
         if (!ok) return lk.failed(body?.login ? "Неверный логин или пароль" : "Неверный пароль");
         lk.ok();
-        return json({ token: sign(fa, OWNER, fa.ver || 1), user: OWNER, owner: true });
+        return json({ token: sign(fa, OWNER, fa.ver || 1), user: OWNER, owner: true, role: "full" });
       }
       const rec = LOGIN_RE.test(login) ? await adminRec(st, login, true) : null;
       if (!passwordOk(rec, pw)) return lk.failed();
       lk.ok();
-      return json({ token: sign(fa, login, rec.ver || 1), user: login, owner: false });
+      if (rec.role === "support" && body?.site !== "support") return fail(403, "support-only", "Этот аккаунт для сайта поддержки arturok.online");
+      return json({ token: sign(fa, login, rec.ver || 1), user: login, owner: false, role: rec.role === "support" ? "support" : "full" });
     }
     // ----- client accounts (optional): the account keeps the client's cabinet across devices -----
     if (a === "account") {
@@ -575,13 +576,32 @@ async function handle(req, context) {
     // ----- admin only -----
     const me = await adminOf(st, req);
     if (!me) return fail(401, "permission-denied", "Нужен вход в админку");
-    if (a === "me") return json({ admin: true, user: me.u, owner: me.owner });
+    if (me.role === "support" && !["me", "support", "chats", "team", "password"].includes(a)) return fail(403, "support-only", "Этот аккаунт только для поддержки");
+    if (a === "me") return json({ admin: true, user: me.u, owner: me.owner, role: me.role });
     if (a === "support") {
       if (b === "list" && m === "GET") {
         const { blobs } = await st.list({ prefix: "support/" });
         const all = (await Promise.all(blobs.map((x) => st.get(x.key, { type: "json" })))).filter(isObj);
-        const list = all.map((d) => { const ms = Array.isArray(d.msgs) ? d.msgs : [], last = ms[ms.length - 1] || null; return { cid: d.cid, name: d.name || "", contact: d.contact || "", unread: d.unread || 0, lastAt: d.lastAt || d.createdAt || 0, last }; });
+        const list = all.map((d) => { const ms = Array.isArray(d.msgs) ? d.msgs : [], last = ms[ms.length - 1] || null; return { cid: d.cid, name: d.name || "", contact: d.contact || "", unread: d.unread || 0, lastAt: d.lastAt || d.createdAt || 0, last, waiting: !!last && last.from === "client" }; });
         return json({ threads: list.sort((x, y) => y.lastAt - x.lastAt).slice(0, 300) });
+      }
+      if (b === "stats" && m === "GET") {
+        const days = Math.max(0, Math.min(3650, Number(url.searchParams.get("days")) || 0)), from = days ? Date.now() - days * 864e5 : 0;
+        const { blobs } = await st.list({ prefix: "support/" });
+        const all = (await Promise.all(blobs.map((x) => st.get(x.key, { type: "json" })))).filter(isObj);
+        const rows = {}, row = (u) => rows[u] || (rows[u] = { u, replies: 0, threads: new Set(), last: 0 });
+        let questions = 0, waiting = 0, answered = 0, newThreads = 0;
+        for (const d of all) {
+          const ms = Array.isArray(d.msgs) ? d.msgs : [], last = ms[ms.length - 1];
+          if (last && last.from === "client") waiting++;
+          if ((d.createdAt || 0) >= from) newThreads++;
+          for (const x of ms) {
+            if ((x.at || 0) < from) continue;
+            if (x.from === "client") questions++;
+            else if (x.from === "studio") { answered++; const r = row(x.by || OWNER); r.replies++; r.threads.add(d.cid); r.last = Math.max(r.last, x.at || 0); }
+          }
+        }
+        return json({ total: all.length, newThreads, waiting, questions, answered, rows: Object.values(rows).map((r) => ({ u: r.u, replies: r.replies, threads: r.threads.size, last: r.last })).sort((x, y) => y.replies - x.replies) });
       }
       if (!CID.test(b || "")) return fail(400, "invalid_argument");
       const key = "support/" + b;
@@ -606,7 +626,7 @@ async function handle(req, context) {
       if (!me.owner) return fail(403, "owner-only", "Управлять админами может только главный админ");
       if (!b && m === "GET") {
         const { blobs } = await st.list({ prefix: "admins/" });
-        const list = (await Promise.all(blobs.map((x) => st.get(x.key, { type: "json" })))).filter(Boolean).map((r) => ({ login: r.login, createdAt: r.createdAt || 0 }));
+        const list = (await Promise.all(blobs.map((x) => st.get(x.key, { type: "json" })))).filter(Boolean).map((r) => ({ login: r.login, createdAt: r.createdAt || 0, role: r.role === "support" ? "support" : "full" }));
         return json({ admins: list.sort((x, y) => x.createdAt - y.createdAt) });
       }
       if (!b && m === "POST") {
@@ -614,7 +634,7 @@ async function handle(req, context) {
         if (!LOGIN_RE.test(login) || login === OWNER) return fail(400, "bad-login", "Логин: 3–32 символа, латинские буквы, цифры, точка, дефис или подчёркивание");
         if (pw.length < 8) return fail(400, "weak-password", "Пароль не короче 8 символов");
         const salt = crypto.randomBytes(16).toString("hex");
-        const r = await st.setJSON("admins/" + login, { login, salt, hash: pbk(pw, salt), ver: 1, createdAt: Date.now() }, { onlyIfNew: true });
+        const r = await st.setJSON("admins/" + login, { login, salt, hash: pbk(pw, salt), ver: 1, createdAt: Date.now(), role: body?.role === "support" ? "support" : "full" }, { onlyIfNew: true });
         if (!r || !r.modified) return fail(409, "login-taken", "Админ с таким логином уже есть");
         admC.delete(login);
         return json({ ok: true });
