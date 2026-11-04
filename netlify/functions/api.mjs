@@ -313,7 +313,7 @@ async function startAttack(st, est, why) {
 
 // The pages can also be served from GitHub Pages; those addresses may call this server from the browser.
 // Extra addresses: environment variable SITE_ORIGINS, comma-separated.
-const ORIGINS = () => ["https://arturok3838-bot.github.io", ...String(env("SITE_ORIGINS") || "").split(",").map((x) => x.trim()).filter(Boolean)];
+const ORIGINS = () => ["https://arturok3838-bot.github.io", ...["arturok.com", "arturok.ru", "arturok.online"].flatMap((d) => ["https://" + d, "https://www." + d]), ...String(env("SITE_ORIGINS") || "").split(",").map((x) => x.trim()).filter(Boolean)];
 function cors(res, req) {
   const o = req.headers.get("origin"), list = ORIGINS();
   res.headers.set("access-control-allow-origin", o && list.includes(o) ? o : list[0]);
